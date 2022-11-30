@@ -8,9 +8,9 @@ using Orazum.Collections;
 
 using rnd = UnityEngine.Random;
 
-namespace Orazum.SpriteAtlas
+namespace Orazum.TextureAtlas
 { 
-    public class TextureGenerator : MonoBehaviour
+    class TextureGenerator : MonoBehaviour
     {
         [SerializeField]
         int2 m_MinMaxWidth = new int2(16, 256);
@@ -21,6 +21,9 @@ namespace Orazum.SpriteAtlas
         [SerializeField]
         int m_TextureCount = 16;
 
+        [SerializeField]
+        string m_TexturesFolderPath = "Assets/Textures/";
+
         Texture2D[] m_Sprites;
 
         void Awake()
@@ -29,7 +32,7 @@ namespace Orazum.SpriteAtlas
             for (int i = 0; i < m_TextureCount; i++)
             {
                 m_Sprites[i] = GenerateRandomTextureBordered(RandomColor());
-                AssetDatabase.CreateAsset(m_Sprites[i], $"Assets/Textures/rnd_{i}.asset");
+                AssetDatabase.CreateAsset(m_Sprites[i], m_TexturesFolderPath + $"rnd_{i}.asset");
             }
         }
 
