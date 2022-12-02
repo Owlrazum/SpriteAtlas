@@ -71,7 +71,7 @@ namespace Orazum.TextureAtlas
         const int Infinite = -1;
 
         static int s_callStack = 0;
-        const int MaxCallStack = 1000;
+        const int MaxCallStack = 100000;
 
         public Node()
         {
@@ -138,19 +138,23 @@ namespace Orazum.TextureAtlas
             if (_rectangle.Dims.x == Infinite && _rectangle.Dims.y == Infinite)
             {
                 isHorizontalSplit = spriteDims.x > spriteDims.y;
+                Debug.Log("xy inf");
             }
             else if (_rectangle.Dims.x == Infinite)
             {
                 isHorizontalSplit = false;
+                Debug.Log("x inf");
             }
             else if (_rectangle.Dims.y == Infinite)
             {
                 isHorizontalSplit = true;
+                Debug.Log("y inf");
             }
             else
             { 
                 int2 delta = _rectangle.Dims - spriteDims;
-                isHorizontalSplit = delta.x > delta.y;
+                isHorizontalSplit = delta.x < delta.y;
+                Debug.Log($"isHoriaontalSplit = {delta.x} < {delta.y}");
             }
 
             if (isHorizontalSplit)
@@ -158,26 +162,26 @@ namespace Orazum.TextureAtlas
                 // split line dividing rectangles goes horizontally
                 int2 newDim = new int2(_rectangle.Dims.x, spriteDims.y);
                 _left._rectangle = new Rectangle(_rectangle.Pos, newDim);
-                int2 newPos = new int2(_rectangle.Pos.x, spriteDims.y + 1);
+                int2 newPos = new int2(_rectangle.Pos.x, _rectangle.Pos.y + spriteDims.y);
                 newDim = new int2(_rectangle.Dims.x, _rectangle.Dims.y);
                 _right._rectangle = new Rectangle(newPos, newDim);
-                Debug.Log($"Horizontal, {_left._rectangle}");
+                Debug.Log($"Horizontal, {_left._rectangle} {_right._rectangle}");
 
-                DebugUtilities.DrawRectangle(_left._rectangle, 10);
-                DebugUtilities.DrawRectangle(_right._rectangle, 10);
+                DebugUtilities.DrawRectangle(_left._rectangle, Color.red, 10000);
+                DebugUtilities.DrawRectangle(_right._rectangle, Color.green, 10000);
             }
             else
             {
                 // split line dividing rectangles goes vertically
                 int2 newDim = new int2(spriteDims.x, _rectangle.Dims.y);
                 _left._rectangle = new Rectangle(_rectangle.Pos, newDim);
-                int2 newPos = new int2(spriteDims.x + 1, _rectangle.Pos.y);
+                int2 newPos = new int2(_rectangle.Pos.x + spriteDims.x, _rectangle.Pos.y);
                 newDim = new int2(_rectangle.Dims.x, _rectangle.Dims.y);
                 _right._rectangle = new Rectangle(newPos, newDim);
-                Debug.Log($"Vertical, {_right._rectangle}");
+                Debug.Log($"Vertical, {_left._rectangle} {_right._rectangle}");
 
-                DebugUtilities.DrawRectangle(_left._rectangle, 10);
-                DebugUtilities.DrawRectangle(_right._rectangle, 10);
+                DebugUtilities.DrawRectangle(_left._rectangle, Color.red, 10000);
+                DebugUtilities.DrawRectangle(_right._rectangle, Color.green, 10000);
             }
 
             return _left;

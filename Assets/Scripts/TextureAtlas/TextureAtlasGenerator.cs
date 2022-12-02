@@ -79,7 +79,7 @@ namespace Orazum.TextureAtlas
             {
                 int a1 = x.width * x.height;
                 int a2 = y.width * y.height;
-                return a1.CompareTo(a2);
+                return a2.CompareTo(a1);
             }
         }
     }

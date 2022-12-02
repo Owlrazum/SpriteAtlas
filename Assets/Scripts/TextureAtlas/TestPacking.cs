@@ -13,6 +13,6 @@ public class TestPacking : MonoBehaviour
         AtlasPackingByBinaryTree packer = new AtlasPackingByBinaryTree();
         Rectangle rect = packer.Insert(100, 100);
         Assert.IsTrue(math.all(rect.Pos == int2.zero) && math.all(rect.Dims == new int2(100, 100)));
-        DebugUtilities.DrawRectangle(rect, 10);
+        DebugUtilities.DrawRectangle(rect, Color.red, 10);
     }
 }
