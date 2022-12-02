@@ -4,7 +4,7 @@ using Unity.Collections;
 using UnityEngine;
 using UnityEditor;
 
-using Orazum.Collections;
+using Orazum.Utilities;
 
 using rnd = UnityEngine.Random;
 
@@ -13,33 +13,33 @@ namespace Orazum.TextureAtlas
     class TextureGenerator : MonoBehaviour
     {
         [SerializeField]
-        int2 m_MinMaxWidth = new int2(16, 256);
+        int2 _minMaxWidth = new int2(16, 256);
 
         [SerializeField]
-        int2 m_MinMaxHeight = new int2(16, 256);
+        int2 _minMaxHeight = new int2(16, 256);
 
         [SerializeField]
-        int m_TextureCount = 16;
+        int _textureCount = 16;
 
         [SerializeField]
-        string m_TexturesFolderPath = "Assets/Textures/";
+        string _texturesFolderPath = "Assets/Textures/";
 
-        Texture2D[] m_Sprites;
+        Texture2D[] _sprites;
 
-        void Awake()
+        void Start()
         {
-            m_Sprites = new Texture2D[m_TextureCount];
-            for (int i = 0; i < m_TextureCount; i++)
+            _sprites = new Texture2D[_textureCount];
+            for (int i = 0; i < _textureCount; i++)
             {
-                m_Sprites[i] = GenerateRandomTextureBordered(RandomColor());
-                AssetDatabase.CreateAsset(m_Sprites[i], m_TexturesFolderPath + $"rnd_{i}.asset");
+                _sprites[i] = GenerateRandomTextureBordered(RandomColor());
+                AssetDatabase.CreateAsset(_sprites[i], _texturesFolderPath + $"rnd_{i}.asset");
             }
         }
 
         Texture2D GenerateRandomTexture()
         {
-            int width = rnd.Range(m_MinMaxWidth.x, m_MinMaxWidth.y + 1);
-            int height = rnd.Range(m_MinMaxHeight.x, m_MinMaxHeight.y + 1);
+            int width = rnd.Range(_minMaxWidth.x, _minMaxWidth.y + 1);
+            int height = rnd.Range(_minMaxHeight.x, _minMaxHeight.y + 1);
 
             var texture = new Texture2D(width, height, TextureFormat.RGBA32, false);
 
@@ -53,8 +53,8 @@ namespace Orazum.TextureAtlas
 
         Texture2D GenerateRandomTextureBordered(Color32 borderColor)
         { 
-            int width = rnd.Range(m_MinMaxWidth.x, m_MinMaxWidth.y + 1);
-            int height = rnd.Range(m_MinMaxHeight.x, m_MinMaxHeight.y + 1);
+            int width = rnd.Range(_minMaxWidth.x, _minMaxWidth.y + 1);
+            int height = rnd.Range(_minMaxHeight.x, _minMaxHeight.y + 1);
 
             var texture = new Texture2D(width, height, TextureFormat.RGBA32, false);
 

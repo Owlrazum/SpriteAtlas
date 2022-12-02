@@ -1,6 +1,6 @@
 using Unity.Mathematics;
 
-namespace Orazum.Collections
+namespace Orazum.Utilities
 { 
     /// <summary>
     /// Blender style coordinate system. Construct along row x axis, construct along column z axis, construct height y axis

@@ -3,6 +3,10 @@ using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.Assertions;
 
+using UnityEditor;
+
+using Orazum.Utilities;
+
 namespace Orazum.TextureAtlas
 {
     // Link that helped me: http://blackpawn.com/texts/lightmaps/default.html
@@ -11,9 +15,8 @@ namespace Orazum.TextureAtlas
     {
         Node _root;
 
-        public int Width { get; private set; }
-        public int Height { get; private set; }
-        public int FreeArea { get; private set; }
+        private int2 _totalDims;
+        public int2 TotalDims { get { return _totalDims; } }
 
         public AtlasPackingByBinaryTree()
         {
@@ -24,7 +27,35 @@ namespace Orazum.TextureAtlas
         {
             Node placementNode = _root.Insert(new int2(width, height));
             Assert.IsNotNull(placementNode);
-            return placementNode.GetRectangle();
+            Rectangle rectangle = placementNode.GetRectangle();
+            UpdateTotalDims(rectangle);
+
+            return rectangle;
+        }
+
+        void UpdateTotalDims(Rectangle rectangle)
+        {
+            int x = rectangle.Pos.x + rectangle.Dims.x;
+            int y = rectangle.Pos.y + rectangle.Dims.y;
+            if (x > _totalDims.x)
+            {
+                _totalDims.x = x;
+            }
+
+            if (y > TotalDims.y)
+            {
+                _totalDims.y = y;
+            }
+        }
+
+        public int2 GetDims()
+        {
+            return _totalDims;
+        }
+
+        public int GetWastedArea()
+        {
+            return -1;
         }
     }
 
@@ -39,6 +70,9 @@ namespace Orazum.TextureAtlas
 
         const int Infinite = -1;
 
+        static int s_callStack = 0;
+        const int MaxCallStack = 1000;
+
         public Node()
         {
             _isEmpty = true;
@@ -52,6 +86,15 @@ namespace Orazum.TextureAtlas
 
         public Node Insert(int2 spriteDims)
         {
+            if (s_callStack > MaxCallStack)
+            {
+                return null;
+            }
+            else
+            {
+                s_callStack++;
+            }
+
             if (!_isLeaf)
             {
                 Node insertPlace = _left.Insert(spriteDims);
@@ -92,32 +135,49 @@ namespace Orazum.TextureAtlas
 
             bool isHorizontalSplit = false;
 
-            if (_rectangle.Dims.x != Infinite)
+            if (_rectangle.Dims.x == Infinite && _rectangle.Dims.y == Infinite)
+            {
+                isHorizontalSplit = spriteDims.x > spriteDims.y;
+            }
+            else if (_rectangle.Dims.x == Infinite)
+            {
+                isHorizontalSplit = false;
+            }
+            else if (_rectangle.Dims.y == Infinite)
             {
                 isHorizontalSplit = true;
             }
-            else if (spriteDims.x < spriteDims.y)
-            {
-                isHorizontalSplit = true;
+            else
+            { 
+                int2 delta = _rectangle.Dims - spriteDims;
+                isHorizontalSplit = delta.x > delta.y;
             }
 
             if (isHorizontalSplit)
             {
                 // split line dividing rectangles goes horizontally
-                int2 newDim = new int2(Infinite, spriteDims.y);
+                int2 newDim = new int2(_rectangle.Dims.x, spriteDims.y);
                 _left._rectangle = new Rectangle(_rectangle.Pos, newDim);
                 int2 newPos = new int2(_rectangle.Pos.x, spriteDims.y + 1);
-                newDim = new int2(Infinite, Infinite);
+                newDim = new int2(_rectangle.Dims.x, _rectangle.Dims.y);
                 _right._rectangle = new Rectangle(newPos, newDim);
+                Debug.Log($"Horizontal, {_left._rectangle}");
+
+                DebugUtilities.DrawRectangle(_left._rectangle, 10);
+                DebugUtilities.DrawRectangle(_right._rectangle, 10);
             }
             else
             {
                 // split line dividing rectangles goes vertically
-                int2 newDim = new int2(spriteDims.x, Infinite);
+                int2 newDim = new int2(spriteDims.x, _rectangle.Dims.y);
                 _left._rectangle = new Rectangle(_rectangle.Pos, newDim);
                 int2 newPos = new int2(spriteDims.x + 1, _rectangle.Pos.y);
-                newDim = new int2(Infinite, Infinite);
+                newDim = new int2(_rectangle.Dims.x, _rectangle.Dims.y);
                 _right._rectangle = new Rectangle(newPos, newDim);
+                Debug.Log($"Vertical, {_right._rectangle}");
+
+                DebugUtilities.DrawRectangle(_left._rectangle, 10);
+                DebugUtilities.DrawRectangle(_right._rectangle, 10);
             }
 
             return _left;
