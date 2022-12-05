@@ -9,7 +9,7 @@ using UnityEditor;
 
 using Orazum.Utilities;
 
-namespace Orazum.TextureAtlas
+namespace Orazum.SpriteAtlas
 {
     class TextureAtlasGenerator : MonoBehaviour
     {
@@ -34,13 +34,11 @@ namespace Orazum.TextureAtlas
 
             Debug.Log($"Assets length {_textures.Length}");
 
-            Array.Sort(_textures, new TextureAreaComparer());
-
-            AtlasPackingByBinaryTree packer = new AtlasPackingByBinaryTree();
-            Rectangle[] rectangles = new Rectangle[_textures.Length];
+            AtlasPackerByBinaryTree packer = new AtlasPackerByBinaryTree(); // TODO: replace or obsolete
+            Sprite[] rectangles = new Sprite[_textures.Length];
             for (int i = 0; i < _textures.Length; i++)
             {
-                Rectangle rect = packer.Insert(_textures[i].width, _textures[i].height);
+                Sprite rect = packer.Insert(_textures[i].width, _textures[i].height);
                 Debug.Log(rect);
                 rectangles[i] = rect;
             }
@@ -53,7 +51,7 @@ namespace Orazum.TextureAtlas
 
             for (int i = 0; i < rectangles.Length; i++)
             {
-                Rectangle rect = rectangles[i];
+                Sprite rect = rectangles[i];
                 NativeArray<Color32> textureData = _textures[i].GetPixelData<Color32>(0);
 
                 for (int x = 0; x < rect.Dims.x; x++)
@@ -71,16 +69,6 @@ namespace Orazum.TextureAtlas
             atlas.Apply(updateMipmaps: false);
 
             AssetDatabase.CreateAsset(atlas, _textureAtlasFolderPath + $"atlas.asset");
-        }
-
-        class TextureAreaComparer : IComparer<Texture2D>
-        {
-            public int Compare(Texture2D x, Texture2D y)
-            {
-                int a1 = x.width * x.height;
-                int a2 = y.width * y.height;
-                return a2.CompareTo(a1);
-            }
         }
     }
 }
