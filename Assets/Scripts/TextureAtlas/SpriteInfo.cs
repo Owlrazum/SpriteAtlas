@@ -1,4 +1,4 @@
-namespace Orazum.TextureAtlas
+namespace Orazum.SpriteAtlas
 {
     [System.Serializable]
     public struct SpriteInfo

@@ -490,10 +490,10 @@ RectTransform:
   m_Father: {fileID: 41694891}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5, y: 0.5}
-  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 100, y: 100}
+  m_SizeDelta: {x: 513, y: 389}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &738591810
 CanvasRenderer:
@@ -523,7 +523,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Texture: {fileID: 2800000, guid: 2b2a69ddad27f45068066158680b0e92, type: 2}
+  m_Texture: {fileID: 2800000, guid: 8f8107bfb83164679823687abe03dd15, type: 2}
   m_UVRect:
     serializedVersion: 2
     x: 0
@@ -580,7 +580,7 @@ MonoBehaviour:
   _minMaxHeight:
     x: 16
     y: 256
-  _textureCount: 100
+  _textureCount: 3
   _texturesFolderPath: Assets/Textures/
 --- !u!1 &1041063094
 GameObject:

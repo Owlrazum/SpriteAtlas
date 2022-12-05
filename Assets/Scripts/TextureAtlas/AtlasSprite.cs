@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace Orazum.TextureAtlas
+namespace Orazum.SpriteAtlas
 { 
     class AtlasSprite
     {
