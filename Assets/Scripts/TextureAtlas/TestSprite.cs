@@ -1,0 +1,45 @@
+using System.Collections;
+
+using UnityEngine;
+using UnityEngine.UI;
+
+using Orazum.Utilities;
+
+namespace Orazum.SpriteAtlas
+{
+    [RequireComponent(typeof(Image))]
+    class TestSprite : MonoBehaviour
+    {
+        Image _image;
+        void Awake()
+        {
+            TryGetComponent(out _image);
+        }
+
+        public void SetSize(Vector2 size)
+        {
+            // _image.rectTransform.sizeDelta = size;
+            StartCoroutine(SpawnAnimation(size));
+        }
+
+        IEnumerator SpawnAnimation(Vector2 size)
+        {
+            Vector2 largeSize = size * 1.2f;
+            Vector2 currentSize = largeSize;
+            _image.rectTransform.sizeDelta = currentSize;
+            float lerpParam = 0;
+            while (lerpParam < 1)
+            {
+                lerpParam += Time.deltaTime;
+                currentSize = Vector2.Lerp(largeSize, size, lerpParam);
+                _image.rectTransform.sizeDelta = currentSize;
+                yield return null;
+            }
+        }
+
+        public void RandomizeColor()
+        {
+            _image.color = ColorUtilities.RandomColor();
+        }
+    }
+}

@@ -15,6 +15,9 @@ namespace Orazum.SpriteAtlas
     {
         public abstract void Pack(Texture2D[] textures, out Sprite[] spritesToPack, out int2 atlasDims);
 
+        public abstract void PrepareAndPackFirst(Texture2D[] textures);
+        public abstract void PackStep(Texture2D texture, out Sprite packedSprite);
+
         protected void SortByArea(Sprite[] sprites)
         {
             Array.Sort(sprites, new SpriteAreaComparer());

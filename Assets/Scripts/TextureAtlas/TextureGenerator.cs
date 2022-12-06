@@ -8,7 +8,7 @@ using Orazum.Utilities;
 
 using rnd = UnityEngine.Random;
 
-namespace Orazum.TextureAtlas
+namespace Orazum.SpriteAtlas
 { 
     class TextureGenerator : MonoBehaviour
     {
@@ -19,17 +19,14 @@ namespace Orazum.TextureAtlas
         int2 _minMaxHeight = new int2(16, 256);
 
         [SerializeField]
-        int _textureCount = 16;
-
-        [SerializeField]
         string _texturesFolderPath = "Assets/Textures/";
 
         Texture2D[] _sprites;
 
-        void Start()
-        {
-            _sprites = new Texture2D[_textureCount];
-            for (int i = 0; i < _textureCount; i++)
+        public void GenerateRandomTextures(int texturesCount)
+        { 
+            _sprites = new Texture2D[texturesCount];
+            for (int i = 0; i < texturesCount; i++)
             {
                 _sprites[i] = GenerateRandomTextureBordered(RandomColor());
                 AssetDatabase.CreateAsset(_sprites[i], _texturesFolderPath + $"rnd_{i}.asset");

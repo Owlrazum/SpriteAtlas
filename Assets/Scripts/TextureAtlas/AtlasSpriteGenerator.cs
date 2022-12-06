@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 
 using Unity.Collections;
@@ -17,13 +18,13 @@ namespace Orazum.SpriteAtlas
         string _texturesFolderPath;
 
         [SerializeField]
-        string _textureAtlasFolderPath;
+        string _spriteAtlasFolderPath;
 
         Texture2D[] _textures;
 
-        void Start()
+        public void GenerateSpriteAtlas()
         {
-            string[] assetGUIDs = AssetDatabase.FindAssets($"t:texture2D", new[]{_texturesFolderPath});
+            string[] assetGUIDs = AssetDatabase.FindAssets($"t:texture2D", new[] { _texturesFolderPath });
             _textures = new Texture2D[assetGUIDs.Length];
             for (int i = 0; i < assetGUIDs.Length; i++)
             {
@@ -34,10 +35,8 @@ namespace Orazum.SpriteAtlas
 
             Debug.Log($"Assets length {_textures.Length}");
 
-            AtlasPackerByFreeLinkedList packer = new(); 
+            AtlasPackerByFreeLinkedList packer = new();
             packer.Pack(_textures, out Sprite[] sprites, out int2 atlasDims);
-
-            atlasDims += 256;
 
             var atlas = new Texture2D(atlasDims.x, atlasDims.y, TextureFormat.RGBA32, false);
             NativeArray<Color32> atlasData = new NativeArray<Color32>(atlasDims.x * atlasDims.y, Allocator.Temp);
@@ -71,7 +70,21 @@ namespace Orazum.SpriteAtlas
             atlas.SetPixelData<Color32>(atlasData, mipLevel: 0);
             atlas.Apply(updateMipmaps: false);
 
-            AssetDatabase.CreateAsset(atlas, _textureAtlasFolderPath + $"atlas.asset");
+            AssetDatabase.CreateAsset(atlas, _spriteAtlasFolderPath + $"atlas.asset");
+        }
+
+        public Texture2D[] GetTexturesForSteppedPacking()
+        {
+            string[] assetGUIDs = AssetDatabase.FindAssets($"t:texture2D", new[] { _texturesFolderPath });
+            _textures = new Texture2D[assetGUIDs.Length];
+            for (int i = 0; i < assetGUIDs.Length; i++)
+            {
+                string assetPath = AssetDatabase.GUIDToAssetPath(assetGUIDs[i]);
+                Texture2D texture = AssetDatabase.LoadAssetAtPath<Texture2D>(assetPath);
+                _textures[i] = texture;
+            }
+
+            return _textures;
         }
     }
 }
