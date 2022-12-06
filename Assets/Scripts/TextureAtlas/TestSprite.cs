@@ -10,6 +10,8 @@ namespace Orazum.SpriteAtlas
     [RequireComponent(typeof(Image))]
     class TestSprite : MonoBehaviour
     {
+        [SerializeField]
+        float _animationSpeed = 3;
         Image _image;
         void Awake()
         {
@@ -17,8 +19,12 @@ namespace Orazum.SpriteAtlas
         }
 
         public void SetSize(Vector2 size)
+        { 
+            _image.rectTransform.sizeDelta = size;
+        }
+
+        public void SetSizeWithAnimation(Vector2 size)
         {
-            // _image.rectTransform.sizeDelta = size;
             StartCoroutine(SpawnAnimation(size));
         }
 
@@ -30,7 +36,7 @@ namespace Orazum.SpriteAtlas
             float lerpParam = 0;
             while (lerpParam < 1)
             {
-                lerpParam += Time.deltaTime;
+                lerpParam += _animationSpeed * Time.deltaTime;
                 currentSize = Vector2.Lerp(largeSize, size, lerpParam);
                 _image.rectTransform.sizeDelta = currentSize;
                 yield return null;
@@ -40,6 +46,11 @@ namespace Orazum.SpriteAtlas
         public void RandomizeColor()
         {
             _image.color = ColorUtilities.RandomColor();
+        }
+
+        public void Destroy()
+        {
+            Destroy(gameObject);
         }
     }
 }

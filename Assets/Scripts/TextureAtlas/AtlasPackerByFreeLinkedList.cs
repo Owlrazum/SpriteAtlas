@@ -53,17 +53,26 @@ namespace Orazum.SpriteAtlas
             _atlasDims = new int2(textures[0].width, textures[0].height);
         }
 
-        public override void PackStep(Texture2D texture, out Sprite packedSprite)
+        public override void PackStep(Texture2D texture, out Sprite packedSprite, out int2 atlasDims)
         {
             packedSprite = new() { Pos = int2.zero, Dims = new int2(texture.width, texture.height) };
             if (FitInAtlasIfPossible(packedSprite.Dims, out int2 fitInPos))
             {
                 packedSprite.Pos = fitInPos;
+                atlasDims = _atlasDims;
                 return;
             }
 
             FitAndIncreaseAtlas(packedSprite.Dims, out fitInPos);
             packedSprite.Pos = fitInPos;
+            atlasDims = _atlasDims;
+        }
+
+        public FreeSprite[] GetFreeSprites()
+        {
+            FreeSprite[] freeSprites = new FreeSprite[_freeSprites.Count];
+            _freeSprites.CopyTo(freeSprites, 0);
+            return freeSprites;
         }
 
         /// No increase in atlas dimnesions
@@ -119,6 +128,7 @@ namespace Orazum.SpriteAtlas
         }
         void SplitAfterFit(in FreeSprite toSplitFreeSprite, in int2 fitInDims)
         {
+            Debug.Log("Split");
             Sprite toSplit = toSplitFreeSprite.SpriteData;
 
             AddFreeSprite(
@@ -129,14 +139,14 @@ namespace Orazum.SpriteAtlas
 
             AddFreeSprite(
                 pos: new int2(toSplit.Pos.x, toSplit.Pos.y + fitInDims.y),
-                dims: new int2(fitInDims.x, toSplit.Dims.y - fitInDims.x),
+                dims: new int2(fitInDims.x, toSplit.Dims.y - fitInDims.y),
                 isBordering: new bool2(false, toSplitFreeSprite.IsBordering.y)
             );
         }
 
         void FitAndIncreaseAtlas(in int2 fitInDims, out int2 fitInPos)
         {
-            //TODO:
+            // TODO:
             // LinkedListNode<FreeSprite> current = _freeSprites.First;
 
             // int cycleLimit = 10000;
@@ -363,12 +373,6 @@ namespace Orazum.SpriteAtlas
             _freeSprites.AddLast(free);
         }
 
-        class FreeSprite
-        {
-            public Sprite SpriteData;
-            public bool2 IsBordering;
-        }
-
         class CanditatesForInsertion
         {
             public LinkedListNode<FreeSprite> node;
@@ -382,5 +386,11 @@ namespace Orazum.SpriteAtlas
                 return x.FreeAreaLeft.CompareTo(y.FreeAreaLeft); // Increasing order
             }
         }
+    }
+
+    class FreeSprite
+    {
+        public Sprite SpriteData;
+        public bool2 IsBordering;
     }
 }
