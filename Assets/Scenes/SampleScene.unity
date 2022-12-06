@@ -475,7 +475,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &738591808
 RectTransform:
   m_ObjectHideFlags: 0
@@ -493,8 +493,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 1741, y: 596}
+  m_AnchoredPosition: {x: -240, y: 223}
+  m_SizeDelta: {x: 875, y: 1114}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &738591810
 CanvasRenderer:
@@ -617,7 +617,7 @@ MonoBehaviour:
   _minMaxHeight:
     x: 16
     y: 256
-  _texturesFolderPath: Assets/Textures/
+  _texturesFolderPath: Assets/Textures/Random
 --- !u!1 &1041063094
 GameObject:
   m_ObjectHideFlags: 0
@@ -733,7 +733,7 @@ MonoBehaviour:
   _textureGenerator: {fileID: 964102163}
   _atlasGenerator: {fileID: 1788872790}
   _texturesCount: 32
-  _shouldGenerateTextures: 0
+  _shouldGenerateTextures: 1
   _shouldStepDebug: 0
   _debugginParentInCanvas: {fileID: 836932283}
   _testingSpritePrefab: {fileID: 8518816498300865280, guid: 81f1ad4124ee6418cb1d6d0970cc141a,
