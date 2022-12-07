@@ -43,9 +43,9 @@ namespace Orazum.SpriteAtlas
             }
         }
 
-        public void RandomizeColor()
+        public void RandomizeColor(float saturation = 1.0f, float value = 1.0f)
         {
-            _image.color = ColorUtilities.RandomColor();
+            _image.color = ColorUtilities.RandomColor(saturation, value);
         }
 
         public void Destroy()

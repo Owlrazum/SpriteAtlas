@@ -733,8 +733,8 @@ MonoBehaviour:
   _textureGenerator: {fileID: 964102163}
   _atlasGenerator: {fileID: 1788872790}
   _texturesCount: 32
-  _shouldGenerateTextures: 1
-  _shouldStepDebug: 0
+  _shouldGenerateTextures: 0
+  _shouldStepDebug: 1
   _debugginParentInCanvas: {fileID: 836932283}
   _testingSpritePrefab: {fileID: 8518816498300865280, guid: 81f1ad4124ee6418cb1d6d0970cc141a,
     type: 3}
@@ -787,5 +787,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a8b436a5f4b7c440eaca3fd59756d411, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _texturesFolderPath: Assets/Textures/
-  _spriteAtlasFolderPath: Assets/Atlases/
+  _texturesFolderPath: Assets/Textures/Random
+  _spriteAtlasFolderPath: Assets/Textures/Atlases/

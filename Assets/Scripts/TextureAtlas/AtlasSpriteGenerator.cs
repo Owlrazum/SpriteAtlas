@@ -33,14 +33,11 @@ namespace Orazum.SpriteAtlas
                 _textures[i] = texture;
             }
 
-            Debug.Log($"Assets length {_textures.Length}");
-
             AtlasPackerByFreeLinkedList packer = new();
             packer.Pack(_textures, out Sprite[] sprites, out int2 atlasDims);
 
             var atlas = new Texture2D(atlasDims.x, atlasDims.y, TextureFormat.RGBA32, false);
             NativeArray<Color32> atlasData = new NativeArray<Color32>(atlasDims.x * atlasDims.y, Allocator.Temp);
-            Debug.Log($"Atlas dims: {atlasDims}");
 
             for (int i = 0; i < sprites.Length; i++)
             {
@@ -53,15 +50,7 @@ namespace Orazum.SpriteAtlas
                     {
                         int texturePixelIndex = IndexUtilities.XyToIndex(x, y, rect.Dims.x);
                         int atlasPixelIndex = IndexUtilities.XyToIndex(x + rect.Pos.x, y + rect.Pos.y, atlasDims.x);
-                        if (texturePixelIndex >= textureData.Length)
-                        {
-                            Debug.Log("");
-                        }
                         Color32 textureColor = textureData[texturePixelIndex];
-                        if (atlasPixelIndex >= atlasData.Length)
-                        {
-                            Debug.Log($"x {x}, y {y}, rectPos {rect.Pos.x} {rect.Pos.y}, rectDims {rect.Dims.x} {rect.Dims.y}. atlasDims {atlasDims}");
-                        }
                         atlasData[atlasPixelIndex] = textureColor;
                     }
                 }

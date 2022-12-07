@@ -78,7 +78,6 @@ namespace Orazum.SpriteAtlas
                 var free = packer.GetFreeSprites();
                 CreateFreeSprites(free);
                 yield return new WaitForSeconds(_steppingDeltaTime);
-                Debug.Log($"AtlasDims {atlasDims}");
             }
         }
 
@@ -104,7 +103,7 @@ namespace Orazum.SpriteAtlas
             float3 pos = new float3(freeSprite.SpriteData.Pos.x, freeSprite.SpriteData.Pos.y, 0);
             float2 size = new float2(freeSprite.SpriteData.Dims.x, freeSprite.SpriteData.Dims.y);
             TestSprite testSprite = Instantiate(_testFreeSpritePrefab, pos, Quaternion.identity, _debugginParentInCanvas);
-            testSprite.RandomizeColor();
+            testSprite.RandomizeColor(0.5f, 0.5f);
             testSprite.SetSize(size);
             return testSprite;
         }
