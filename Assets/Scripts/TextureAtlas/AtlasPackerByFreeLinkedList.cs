@@ -6,6 +6,8 @@ using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.Assertions;
 
+using Orazum.Graphs;
+
 namespace Orazum.SpriteAtlas
 {
     /// It should be noted that the origin is in lower left corner.
@@ -372,6 +374,11 @@ namespace Orazum.SpriteAtlas
             _freeSprites.AddLast(free);
         }
 
+        void RemoveFreeSprite()
+        { 
+
+        }
+
         void MergeFreeSprites()
         {
             FreeSprite[] freeSpritesBuffer = new FreeSprite[_freeSprites.Count];
@@ -411,9 +418,15 @@ namespace Orazum.SpriteAtlas
     /// Currently it is not the case, because free sprites are created in a specific way
     /// Merging them can work in some cases, but it is not ideal
     /// Perhaps, storing adjacent free sprites can be helpful
-    class FreeSprite
+    class FreeSprite : IAdjacentable<FreeSprite>
     {
         public Sprite SpriteData;
         public bool2 IsBordering;
+        public int Id { get; set; }
+
+        public bool IsAdjacent(FreeSprite other)
+        {
+            return Id == other.Id;
+        }
     }
 }
