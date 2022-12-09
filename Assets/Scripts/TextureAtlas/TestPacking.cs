@@ -62,7 +62,7 @@ namespace Orazum.SpriteAtlas
         {
             Texture2D[] textures = _atlasGenerator.GetTexturesForSteppedPacking();
 
-            AtlasPackerByFreeLinkedList packer = new();
+            AtlasPackerByFreeSpritesAndAdjacency packer = new();
             packer.PrepareAndPackFirst(textures);
             float2 textureDims = new float2(textures[0].width, textures[0].height);
             CreateTestSprite(new float3(0, 0, 0), textureDims);

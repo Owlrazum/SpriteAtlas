@@ -10,6 +10,8 @@ namespace Orazum.Graphs.Tests
 {
     class AdjacencyListTests
     {
+        // Not all cases are catched by those tests.
+
         [Test]
         public void SimplePairTest()
         {

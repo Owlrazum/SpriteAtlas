@@ -33,7 +33,7 @@ namespace Orazum.SpriteAtlas
                 _textures[i] = texture;
             }
 
-            AtlasPackerByFreeLinkedList packer = new();
+            AtlasPackerByFreeSpritesAndAdjacency packer = new();
             packer.Pack(_textures, out Sprite[] sprites, out int2 atlasDims);
 
             var atlas = new Texture2D(atlasDims.x, atlasDims.y, TextureFormat.RGBA32, false);

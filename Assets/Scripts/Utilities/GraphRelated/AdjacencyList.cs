@@ -30,17 +30,21 @@ namespace Orazum.Graphs
         {
             nodes.Add(idCount, node);
             edges.Add(idCount, new(edgesCapacity));
-            idCount++;
 
-            int addedNodeIndex = nodes.Count - 1;
+            int addedNodeIndex = idCount;
             for (int i = 0; i < idCount; i++)
             {
-                if (node.IsAdjacent(nodes[i]))
-                {
-                    edges[i].Add(addedNodeIndex);
-                    edges[addedNodeIndex].Add(i);
+                if (HasNode(i))
+                { 
+                    if (node.IsAdjacent(nodes[i]))
+                    {
+                        edges[i].Add(addedNodeIndex);
+                        edges[addedNodeIndex].Add(i);
+                    }
                 }
             }
+
+            idCount++;
 
             return idCount - 1;
         }
