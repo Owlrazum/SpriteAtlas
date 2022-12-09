@@ -15,13 +15,13 @@ namespace Orazum.SpriteAtlas
     {
         const int CycleLimit = 10000;
 
-        int2 _atlasDims;
+        int2 atlasDims;
 
-        LinkedList<FreeSprite> _freeSprites;
+        AdjacencyList<FreeSprite> freeSprites;
 
         List<CanditateForInsertion> _canditatesBuffer;
 
-        public override void Pack(Texture2D[] textures, out Sprite[] packedSprites, out int2 atlasDims)
+        public override void Pack(Texture2D[] textures, out Sprite[] packedSprites, out int2 atlasDimsOut)
         {
             packedSprites = new Sprite[textures.Length];
             for (int i = 0; i < textures.Length; i++)
@@ -29,10 +29,10 @@ namespace Orazum.SpriteAtlas
                 packedSprites[i] = new() { Pos = int2.zero, Dims = new int2(textures[i].width, textures[i].height) };
             }
 
-            _freeSprites = new LinkedList<FreeSprite>();
+            freeSprites = new AdjacencyList<FreeSprite>(textures.Length, 5);
             _canditatesBuffer = new(packedSprites.Length / 2);
             SortByArea(textures);
-            _atlasDims = new int2(packedSprites[0].Dims);
+            atlasDims = new int2(packedSprites[0].Dims);
 
             for (int i = 1; i < packedSprites.Length; i++)
             {
@@ -40,23 +40,23 @@ namespace Orazum.SpriteAtlas
                 packedSprites[i].Pos = fitInPos;
             }
 
-            atlasDims = _atlasDims;
+            atlasDimsOut = atlasDims;
         }
 
         public override void PrepareAndPackFirst(Texture2D[] textures)
         {
-            _freeSprites = new LinkedList<FreeSprite>();
+            freeSprites = new AdjacencyList<FreeSprite>(textures.Length, 5);
             _canditatesBuffer = new(textures.Length / 2);
             SortByArea(textures);
-            _atlasDims = new int2(textures[0].width, textures[0].height);
+            atlasDims = new int2(textures[0].width, textures[0].height);
         }
 
-        public override void PackStep(Texture2D texture, out Sprite packedSprite, out int2 atlasDims)
+        public override void PackStep(Texture2D texture, out Sprite packedSprite, out int2 atlasDimsOut)
         {
             packedSprite = new() { Pos = int2.zero, Dims = new int2(texture.width, texture.height) };
             PrivatePackStep(packedSprite.Dims, out int2 fitInPos);
             packedSprite.Pos = fitInPos;
-            atlasDims = _atlasDims;
+            atlasDimsOut = atlasDims;
         }
 
         void PrivatePackStep(in int2 fitInDims, out int2 fitInPos)
@@ -71,53 +71,50 @@ namespace Orazum.SpriteAtlas
 
         public FreeSprite[] GetFreeSprites()
         {
-            FreeSprite[] freeSprites = new FreeSprite[_freeSprites.Count];
-            _freeSprites.CopyTo(freeSprites, 0);
-            return freeSprites;
+            FreeSprite[] freeSpritesArray = new FreeSprite[freeSprites.Count];
+            freeSprites.CopyNodesTo(freeSpritesArray, 0);
+            return freeSpritesArray;
         }
 
         /// No increase in atlas dimnesions
         bool FitInAtlasIfPossible(in int2 fitInDims, out int2 fitInPos)
         {
-            LinkedListNode<FreeSprite> current = _freeSprites.First;
-
-            int cycleCount = 0;
-            while (current != null && cycleCount < CycleLimit)
+            for (int i = 0; i < freeSprites.IdCount; i++)
             {
-                cycleCount++;
-
-                Sprite freeSprite = current.Value.SpriteData;
-                if (math.any(fitInDims > freeSprite.Dims))
+                if (freeSprites.HasNode(i))
                 {
-                    current = current.Next;
-                    continue;
+                    Sprite freeSprite = freeSprites.GetNode(i).SpriteData;
+
+                    if (math.any(fitInDims > freeSprite.Dims))
+                    {
+                        continue;
+                    }
+
+                    if (math.all(fitInDims == freeSprite.Dims))
+                    {
+                        fitInPos = freeSprite.Pos;
+                        freeSprites.RemoveNode(i);
+                        return true;
+                    }
+
+                    _canditatesBuffer.Add(new()
+                    {
+                        NodeIndex = i,
+                        FreeAreaLeft = freeSprite.Area - (fitInDims.x * fitInDims.y)
+                    });
                 }
-
-                if (math.all(fitInDims == freeSprite.Dims))
-                {
-                    fitInPos = freeSprite.Pos;
-                    _freeSprites.Remove(current);
-                    return true;
-                }
-
-                _canditatesBuffer.Add(new()
-                {
-                    Node = current,
-                    FreeAreaLeft = freeSprite.Area - (fitInDims.x * fitInDims.y)
-                });
-
-                current = current.Next;
             }
 
             if (_canditatesBuffer.Count > 0)
             {
                 _canditatesBuffer.Sort();
-                LinkedListNode<FreeSprite> choice = _canditatesBuffer[0].Node;
-                Assert.IsTrue(math.all(choice.Value.SpriteData.Dims >= fitInDims));
+                int choiceIndex = _canditatesBuffer[0].NodeIndex;
+                FreeSprite freeSprite = freeSprites.GetNode(choiceIndex);
+                Assert.IsTrue(math.all(freeSprite.SpriteData.Dims >= fitInDims));
 
-                fitInPos = choice.Value.SpriteData.Pos;
-                SplitAfterFit(choice.Value, fitInDims);
-                _freeSprites.Remove(choice);
+                fitInPos = freeSprite.SpriteData.Pos;
+                SplitAfterFit(freeSprite, fitInDims);
+                freeSprites.RemoveNode(choiceIndex);
 
                 _canditatesBuffer.Clear();
                 return true;
@@ -133,41 +130,37 @@ namespace Orazum.SpriteAtlas
             AddFreeSprite(
                 pos: new int2(toSplit.Pos.x + fitInDims.x, toSplit.Pos.y),
                 dims: new int2(toSplit.Dims.x - fitInDims.x, toSplit.Dims.y),
-                isBordering: toSplitFreeSprite.IsBordering
+                isBordering: toSplitFreeSprite.IsBorderingAtlas
             );
 
             AddFreeSprite(
                 pos: new int2(toSplit.Pos.x, toSplit.Pos.y + fitInDims.y),
                 dims: new int2(fitInDims.x, toSplit.Dims.y - fitInDims.y),
-                isBordering: new bool2(false, toSplitFreeSprite.IsBordering.y)
+                isBordering: new bool2(false, toSplitFreeSprite.IsBorderingAtlas.y)
             );
         }
 
         void FitAndIncreaseAtlas(in int2 fitInDims, out int2 fitInPos)
         {
-            // TODO:
-            LinkedListNode<FreeSprite> current = _freeSprites.First;
-
-            int cycleCount = 0;
-            while (current != null && cycleCount < CycleLimit)
+            for (int i = 0; i < freeSprites.IdCount; i++)
             {
-                cycleCount++;
-                FreeSprite free = current.Value;
-                if (fitInDims.x <= free.SpriteData.Dims.x && free.IsBordering.y)
+                if (freeSprites.HasNode(i))
                 {
-                    _freeSprites.Remove(current);
-                    PlaceIntoFreeSpriteWithVerticalIncrease(free, fitInDims, out fitInPos);
-                    return;
-                }
+                    FreeSprite free = freeSprites.GetNode(i);
+                    if (fitInDims.x <= free.SpriteData.Dims.x && free.IsBorderingAtlas.y)
+                    {
+                        freeSprites.RemoveNode(i);
+                        PlaceIntoFreeSpriteWithVerticalIncrease(free, fitInDims, out fitInPos);
+                        return;
+                    }
 
-                if (fitInDims.y <= free.SpriteData.Dims.y && free.IsBordering.x)
-                {
-                    _freeSprites.Remove(current);
-                    PlaceIntoFreeSpriteWithHorizontalIncrease(free, fitInDims, out fitInPos);
-                    return;
+                    if (fitInDims.y <= free.SpriteData.Dims.y && free.IsBorderingAtlas.x)
+                    {
+                        freeSprites.RemoveNode(i);
+                        PlaceIntoFreeSpriteWithHorizontalIncrease(free, fitInDims, out fitInPos);
+                        return;
+                    }
                 }
-
-                current = current.Next;
             }
 
             if (fitInDims.x < fitInDims.y)
@@ -182,15 +175,15 @@ namespace Orazum.SpriteAtlas
 
         void PlaceIntoFreeSpriteWithVerticalIncrease(in FreeSprite free, in int2 fitInDims, out int2 fitInPos)
         {
-            int2 prevAtlasDims = _atlasDims;
+            int2 prevAtlasDims = atlasDims;
             int2 freePos = free.SpriteData.Pos;
             int2 freeDims = free.SpriteData.Dims;
             fitInPos = freePos;
 
-            bool2 freeIsBordering = free.IsBordering;
+            bool2 freeIsBordering = free.IsBorderingAtlas;
 
             int verticalIncrease = freePos.y + fitInDims.y - prevAtlasDims.y;
-            _atlasDims.y += verticalIncrease;
+            atlasDims.y += verticalIncrease;
             UnsetBorderedVerticallyFreeSprites();
 
             int horizontalFree = freeDims.x - fitInDims.x;
@@ -227,15 +220,15 @@ namespace Orazum.SpriteAtlas
         /// Symmetical mirror of PlaceIntoFreeSpriteWithVerticalIncrease. Changed x to y.
         void PlaceIntoFreeSpriteWithHorizontalIncrease(in FreeSprite free, in int2 fitInDims, out int2 fitInPos)
         {
-            int2 prevAtlasDims = _atlasDims;
+            int2 prevAtlasDims = atlasDims;
             int2 freePos = free.SpriteData.Pos;
             int2 freeDims = free.SpriteData.Dims;
             fitInPos = freePos;
 
-            bool2 freeIsBordering = free.IsBordering;
+            bool2 freeIsBordering = free.IsBorderingAtlas;
 
             int horizontalIncrease = freePos.x + fitInDims.x - prevAtlasDims.x;
-            _atlasDims.x += horizontalIncrease;
+            atlasDims.x += horizontalIncrease;
             UnsetBorderedHorizontallyFreeSprites();
 
             int verticalFree = freeDims.y - fitInDims.y;
@@ -273,9 +266,9 @@ namespace Orazum.SpriteAtlas
         /// Place sprite on the right border, increasing atlas dimensions at least on fitInDims.x
         void PlaceSpriteBorderRight(in int2 fitInDims, out int2 fitInPos)
         {
-            int2 prevAtlasDims = _atlasDims;
-            fitInPos = new int2(_atlasDims.x, 0);
-            _atlasDims.x += fitInDims.x;
+            int2 prevAtlasDims = atlasDims;
+            fitInPos = new int2(atlasDims.x, 0);
+            atlasDims.x += fitInDims.x;
             UnsetBorderedHorizontallyFreeSprites();
 
             int verticalDelta = prevAtlasDims.y - fitInDims.y;
@@ -295,7 +288,7 @@ namespace Orazum.SpriteAtlas
             else
             {
                 int verticalIncrease = math.abs(verticalDelta);
-                _atlasDims.y += verticalIncrease;
+                atlasDims.y += verticalIncrease;
                 UnsetBorderedVerticallyFreeSprites();
 
                 AddFreeSprite(
@@ -308,9 +301,9 @@ namespace Orazum.SpriteAtlas
         /// Symmetical mirror of PlaceSpriteBorderRight. Swapped x and y.
         void PlaceSpriteBorderUp(in int2 fitInDims, out int2 fitInPos)
         {
-            int2 prevAtlasDims = _atlasDims;
-            fitInPos = new int2(0, _atlasDims.y);
-            _atlasDims.y += fitInDims.y;
+            int2 prevAtlasDims = atlasDims;
+            fitInPos = new int2(0, atlasDims.y);
+            atlasDims.y += fitInDims.y;
             UnsetBorderedVerticallyFreeSprites();
 
             int horizontalDelta = prevAtlasDims.x - fitInDims.x;
@@ -330,7 +323,7 @@ namespace Orazum.SpriteAtlas
             else
             {
                 int horizontalIncrease = math.abs(horizontalDelta);
-                _atlasDims.x += horizontalIncrease;
+                atlasDims.x += horizontalIncrease;
                 UnsetBorderedHorizontallyFreeSprites();
 
                 AddFreeSprite(
@@ -343,20 +336,22 @@ namespace Orazum.SpriteAtlas
 
         void UnsetBorderedHorizontallyFreeSprites()
         {
-            LinkedListNode<FreeSprite> current = _freeSprites.First;
-            while (current != null)
+            for (int i = 0; i < freeSprites.IdCount; i++)
             {
-                current.Value.IsBordering.x = false;
-                current = current.Next;
+                if (freeSprites.HasNode(i))
+                {
+                    freeSprites.GetNode(i).IsBorderingAtlas.x = false;
+                }
             }
         }
         void UnsetBorderedVerticallyFreeSprites()
         {
-            LinkedListNode<FreeSprite> current = _freeSprites.First;
-            while (current != null)
+            for (int i = 0; i < freeSprites.IdCount; i++)
             {
-                current.Value.IsBordering.y = false;
-                current = current.Next;
+                if (freeSprites.HasNode(i))
+                {
+                    freeSprites.GetNode(i).IsBorderingAtlas.y = false;
+                }
             }
         }
 
@@ -369,31 +364,13 @@ namespace Orazum.SpriteAtlas
                     Pos = pos,
                     Dims = dims
                 },
-                IsBordering = isBordering
+                IsBorderingAtlas = isBordering
             };
-            _freeSprites.AddLast(free);
-        }
-
-        void RemoveFreeSprite()
-        { 
-
+            free.Id = freeSprites.AddNode(free);
         }
 
         void MergeFreeSprites()
         {
-            FreeSprite[] freeSpritesBuffer = new FreeSprite[_freeSprites.Count];
-            _freeSprites.CopyTo(freeSpritesBuffer, 0);
-
-            for (int i = 0; i < freeSpritesBuffer.Length; i++)
-            {
-                for (int j = 1; j < freeSpritesBuffer.Length; j++)
-                {
-                    if (AreAdjacent(freeSpritesBuffer[i], freeSpritesBuffer[j]))
-                    { 
-
-                    }
-                }
-            }
         }
 
         bool AreAdjacent(FreeSprite s1, FreeSprite s2)
@@ -403,7 +380,7 @@ namespace Orazum.SpriteAtlas
 
         class CanditateForInsertion : IComparable<CanditateForInsertion>
         {
-            public LinkedListNode<FreeSprite> Node;
+            public int NodeIndex;
             public int FreeAreaLeft;
 
             public int CompareTo(CanditateForInsertion other)
@@ -418,15 +395,59 @@ namespace Orazum.SpriteAtlas
     /// Currently it is not the case, because free sprites are created in a specific way
     /// Merging them can work in some cases, but it is not ideal
     /// Perhaps, storing adjacent free sprites can be helpful
-    class FreeSprite : IAdjacentable<FreeSprite>
+    public class FreeSprite : IAdjacentable<FreeSprite>
     {
         public Sprite SpriteData;
-        public bool2 IsBordering;
+        public bool2 IsBorderingAtlas;
         public int Id { get; set; }
+
+        public int4 SpriteBorders
+        {
+            get
+            {
+                return new int4(SpriteData.Pos.x, SpriteData.Pos.x + SpriteData.Dims.x,
+                    SpriteData.Pos.y, SpriteData.Pos.y + SpriteData.Dims.y);
+            }
+        }
 
         public bool IsAdjacent(FreeSprite other)
         {
-            return Id == other.Id;
+            int4 borders = SpriteBorders;
+            int4 otherBorders = other.SpriteBorders;
+            int4 otherBordersArranged = otherBorders.yxwz;
+            int4 delta = math.abs(SpriteBorders - otherBordersArranged);
+
+            // 0, 100, 0, 100
+            // 101, 201, 0, 100
+            // 201, 101, 100, 0
+            
+            if (math.any(delta == 1))
+            {
+                if ((IsBetween(borders.xy, otherBorders.x) || 
+                    IsBetween(borders.xy, otherBorders.y) || 
+                    IsBetween(otherBorders.xy, borders.x) ||
+                    IsBetween(otherBorders.xy, borders.y)) 
+                    && math.any(delta.zw == 1))
+                {
+                    return true;
+                }
+
+                if ((IsBetween(borders.zw, otherBorders.z) || 
+                    IsBetween(borders.zw, otherBorders.w) || 
+                    IsBetween(otherBorders.zw, borders.z) ||
+                    IsBetween(otherBorders.zw, borders.w)) 
+                    && math.any(delta.xy == 1))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        bool IsBetween(in int2 minMax, int value)
+        {
+            return value >= minMax.x && value <= minMax.y;
         }
     }
 }

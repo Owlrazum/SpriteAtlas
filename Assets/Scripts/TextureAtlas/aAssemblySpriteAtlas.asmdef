@@ -1,0 +1,18 @@
+{
+    "name": "aAssemblySpriteAtlas",
+    "rootNamespace": "",
+    "references": [
+        "GUID:f2be7a2bb7cc24cbbaa29cbfb1004c34",
+        "GUID:237eab18fc5184722a2d959a822b9ee4",
+        "GUID:d8b63aba1907145bea998dd612889d6b"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

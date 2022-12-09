@@ -12,12 +12,18 @@ namespace Orazum.Graphs
         readonly int edgesCapacity;
 
         public int Count { get { return nodes.Count; } }
+        public int IdCount { get { return idCount; } }
 
         public AdjacencyList(int nodesCapacityArg, int edgesCapacityArg)
         {
             nodes = new(nodesCapacityArg);
             edges = new(nodesCapacityArg);
             this.edgesCapacity = edgesCapacityArg;
+        }
+
+        public void CopyNodesTo(T[] array, int startIndex)
+        {
+            nodes.Values.CopyTo(array, startIndex);
         }
 
         public int AddNode(T node)

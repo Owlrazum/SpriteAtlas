@@ -11,13 +11,7 @@ namespace Orazum.Graphs.Tests
     class AdjacencyListTests
     {
         [Test]
-        public void AdjacencyListTestsSimplePasses()
-        {
-            SimplePairTest();
-            PetersonGraphTest();
-        }
-
-        void SimplePairTest()
+        public void SimplePairTest()
         {
             AdjacencyList<AdjacentableMock> list = new(2, 1);
             List<AdjacentableMock> adjs = FillSimplePair();
@@ -33,7 +27,8 @@ namespace Orazum.Graphs.Tests
             Assert.IsTrue(adj.Count == 1 && adj[0] == n1);
         }
 
-        void PetersonGraphTest()
+        [Test]
+        public void PetersonGraphTest()
         {
             AdjacencyList<AdjacentableMock> list = new(10, 3);
             List<AdjacentableMock> nodes = FillPetersonGraph();
