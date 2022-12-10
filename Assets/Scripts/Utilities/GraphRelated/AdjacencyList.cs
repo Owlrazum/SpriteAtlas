@@ -79,6 +79,41 @@ namespace Orazum.Graphs
             return edges[nodeId];
         }
 
+        public List<List<T>> GetAdjacentGroups(int minConnections = 2)
+        {
+            List<List<T>> adjacentGroups = new(nodes.Count / 3 );
+            HashSet<int> checkedIds = new HashSet<int>(nodes.Count);
+            for (int i = 0; i < idCount; i++)
+            {
+                if (!HasNode(i))
+                {
+                    continue;
+                }
+
+                if (checkedIds.Contains(i))
+                {
+                    continue;
+                }
+
+                int nodeId = i;
+                List<T> group = new(edges[nodeId].Count + 1);
+                group.Add(nodes[nodeId]);
+                checkedIds.Add(nodeId);
+                for (int j = 0; j < edges[nodeId].Count; j++)
+                {
+                    int id = edges[nodeId][j];
+                    TraverseConnection(checkedIds, group, id);
+                }
+
+                if (group.Count >= minConnections)
+                {
+                    adjacentGroups.Add(group);
+                }
+            }
+
+            return adjacentGroups;
+        }
+
         public List<T> GetAdjacentGroup(int nodeId)
         {
             CheckNodeId(nodeId);

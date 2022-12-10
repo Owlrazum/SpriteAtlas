@@ -170,6 +170,12 @@ namespace Orazum.Graphs.Tests
             Assert.IsTrue(list.GetAdjacentGroup(0).Count == list.GetAdjacentGroup(3).Count);
             list.RemoveNode(3);
             Assert.IsTrue(list.GetAdjacentGroup(0).Count == 3 && list.GetAdjacentGroup(0).Count == list.GetAdjacentGroup(6).Count);
+
+            var groups = list.GetAdjacentGroups(3);
+            Assert.IsTrue(groups.Count == 2 && groups[0].Count == 3 && groups[0].Count == groups[1].Count);
+            list.RemoveNode(0);
+            groups = list.GetAdjacentGroups(3);
+            Assert.IsTrue(groups.Count == 1 && groups[0].Count == 3);
         }
     }
 

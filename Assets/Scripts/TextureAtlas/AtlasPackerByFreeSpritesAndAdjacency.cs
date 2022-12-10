@@ -154,6 +154,13 @@ namespace Orazum.SpriteAtlas
         }
         bool FitInMergedFreeSpriteWithoutAtlasIncrease()
         {
+            for (int i = 0; i < freeSprites.IdCount; i++)
+            {
+                if (freeSprites.HasNode(i))
+                { 
+                    
+                }
+            }
             return false;
         }
 
