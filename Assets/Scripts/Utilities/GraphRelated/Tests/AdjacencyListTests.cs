@@ -27,6 +27,8 @@ namespace Orazum.Graphs.Tests
             Assert.IsTrue(adj.Count == 1 && adj[0] == n2);
             adj = list.GetAdjacentNodes(n2);
             Assert.IsTrue(adj.Count == 1 && adj[0] == n1);
+            var group = list.GetAdjacentGroup(0);
+            Assert.IsTrue(group.Count == 2 && group.Contains(adjs[0]) && group.Contains(adjs[1]));
         }
 
         [Test]
@@ -137,6 +139,37 @@ namespace Orazum.Graphs.Tests
             adjs[8].AddConnection(adjs[5]);
 
             return adjs;
+        }
+
+        [Test]
+        public void AdjacentGroupTest()
+        { 
+            List<AdjacentableMock> nodes = new List<AdjacentableMock>(7);
+            for (int i = 0; i < nodes.Capacity; i++)
+            {
+                nodes.Add(new(i, 4));
+            }
+
+            nodes[0].AddConnection(nodes[1]);
+            nodes[0].AddConnection(nodes[2]);
+
+            nodes[6].AddConnection(nodes[4]);
+            nodes[6].AddConnection(nodes[5]);
+
+            nodes[3].AddConnection(nodes[1]);
+            nodes[3].AddConnection(nodes[2]);
+            nodes[3].AddConnection(nodes[4]);
+            nodes[3].AddConnection(nodes[5]);
+
+            AdjacencyList<AdjacentableMock> list = new(10, 3);
+            for (int i = 0; i < nodes.Count; i++)
+            {
+                list.AddNode(nodes[i]);
+            }
+
+            Assert.IsTrue(list.GetAdjacentGroup(0).Count == list.GetAdjacentGroup(3).Count);
+            list.RemoveNode(3);
+            Assert.IsTrue(list.GetAdjacentGroup(0).Count == 3 && list.GetAdjacentGroup(0).Count == list.GetAdjacentGroup(6).Count);
         }
     }
 

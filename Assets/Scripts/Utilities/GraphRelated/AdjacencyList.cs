@@ -1,5 +1,5 @@
-using System;
 using System.Collections.Generic;
+using UnityEngine.Assertions;
 
 namespace Orazum.Graphs
 {
@@ -7,7 +7,7 @@ namespace Orazum.Graphs
     {
         Dictionary<int, T> nodes;
         Dictionary<int, List<int>> edges;
-        
+
         int idCount;
         readonly int edgesCapacity;
 
@@ -35,7 +35,7 @@ namespace Orazum.Graphs
             for (int i = 0; i < idCount; i++)
             {
                 if (HasNode(i))
-                { 
+                {
                     if (node.IsAdjacent(nodes[i]))
                     {
                         edges[i].Add(addedNodeIndex);
@@ -79,12 +79,41 @@ namespace Orazum.Graphs
             return edges[nodeId];
         }
 
-        void CheckNodeId(int nodeId)
-        { 
-            if (nodeId < 0 || nodeId >= idCount)
+        public List<T> GetAdjacentGroup(int nodeId)
+        {
+            CheckNodeId(nodeId);
+            List<T> group = new(edges[nodeId].Count + 1);
+            HashSet<int> checkedIds = new HashSet<int>(group.Capacity);
+            group.Add(nodes[nodeId]);
+            checkedIds.Add(nodeId);
+            for (int i = 0; i < edges[nodeId].Count; i++)
             {
-                throw new System.ArgumentOutOfRangeException($"Node index {nodeId} is out of range!");
+                int id = edges[nodeId][i];
+                TraverseConnection(checkedIds, group, id);
             }
+
+            return group;
+        }
+
+        void TraverseConnection(HashSet<int> checkedIds, List<T> group, int nodeId)
+        {
+            if (checkedIds.Contains(nodeId))
+            {
+                return;
+            }
+
+            group.Add(nodes[nodeId]);
+            checkedIds.Add(nodeId);
+            for (int i = 0; i < edges[nodeId].Count; i++)
+            {
+                int id = edges[nodeId][i];
+                TraverseConnection(checkedIds, group, id);
+            }
+        }
+
+        void CheckNodeId(int nodeId)
+        {
+            Assert.IsTrue(nodes.ContainsKey(nodeId));
         }
     }
 }
