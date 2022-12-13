@@ -1,8 +1,10 @@
 using System;
 using Unity.Mathematics;
 
+using static Orazum.Utilities.Math;
+
 namespace Orazum.SpriteAtlas
-{ 
+{
     public struct Sprite : IEquatable<Sprite>
     {
         public int2 Pos;
@@ -14,6 +16,39 @@ namespace Orazum.SpriteAtlas
         {
             Pos = pos;
             Dims = dims;
+        }
+
+        public int4 Borders
+        {
+            get
+            {
+                return new int4(Pos.x, Pos.x + Dims.x - 1, Pos.y, Pos.y + Dims.y - 1);
+            }
+        }
+
+        public int RightBorder
+        {
+            get
+            {
+                return Pos.x + Dims.x - 1;
+            }
+        }
+
+        public int TopBorder
+        {
+            get
+            {
+                return Pos.y + Dims.y;
+            }
+        }
+
+        public bool DoesFitHorizontally(int posX)
+        {
+            return IsBetween(Pos.x, RightBorder, posX);
+        }
+        public bool DoesFitVertically(int posY)
+        {
+            return IsBetween(Pos.y, TopBorder, posY);
         }
 
         public bool Equals(Sprite other)
@@ -32,12 +67,12 @@ namespace Orazum.SpriteAtlas
         }
 
         public static bool operator ==(Sprite lhs, Sprite rhs)
-        { 
+        {
             return math.all(lhs.Pos == rhs.Pos) && math.all(lhs.Dims == rhs.Dims);
         }
 
         public static bool operator !=(Sprite lhs, Sprite rhs)
-        { 
+        {
             return math.any(lhs.Pos != rhs.Pos) || math.any(lhs.Dims != rhs.Dims);
         }
 
