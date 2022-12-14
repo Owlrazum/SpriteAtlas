@@ -18,34 +18,34 @@ namespace Orazum.SpriteAtlas
         const int CycleLimit = 10000;
 
         int2 atlasDims;
+        Sprite[] placedSprites;
+        int lastPlacedSpriteIndex;
 
         AdjacencyList<FreeSprite> freeSprites;
 
         List<CanditateForInsertion> _canditatesBuffer;
 
-        int2 minFitInDims;
-
         public override void Pack(Texture2D[] textures, out Sprite[] packedSprites, out int2 atlasDimsOut)
         {
-            packedSprites = new Sprite[textures.Length];
+            placedSprites = new Sprite[textures.Length];
             for (int i = 0; i < textures.Length; i++)
             {
-                packedSprites[i] = new() { Pos = int2.zero, Dims = new int2(textures[i].width, textures[i].height) };
+                placedSprites[i] = new() { Pos = int2.zero, Dims = new int2(textures[i].width, textures[i].height) };
             }
 
             freeSprites = new AdjacencyList<FreeSprite>(textures.Length, 5);
-            _canditatesBuffer = new(packedSprites.Length / 2);
+            _canditatesBuffer = new(placedSprites.Length / 2);
             SortByArea(textures);
-            atlasDims = new int2(packedSprites[0].Dims);
+            atlasDims = new int2(placedSprites[0].Dims);
 
-            InitializeMinFitInDims(textures);
-
-            for (int i = 1; i < packedSprites.Length; i++)
+            for (int i = 1; i < placedSprites.Length; i++)
             {
-                PrivatePackStep(packedSprites[i].Dims, out int2 fitInPos);
-                packedSprites[i].Pos = fitInPos;
+                PrivatePackStep(placedSprites[i].Dims, out int2 fitInPos);
+                placedSprites[i].Pos = fitInPos;
+                lastPlacedSpriteIndex = i;
             }
 
+            packedSprites = placedSprites;
             atlasDimsOut = atlasDims;
         }
 
@@ -54,27 +54,10 @@ namespace Orazum.SpriteAtlas
             freeSprites = new AdjacencyList<FreeSprite>(textures.Length, 5);
             _canditatesBuffer = new(textures.Length / 2);
             SortByArea(textures);
+
+            placedSprites = new Sprite[textures.Length];
+            placedSprites[0] = new() { Pos = int2.zero, Dims = new int2(textures[0].width, textures[0].height) };
             atlasDims = new int2(textures[0].width, textures[0].height);
-
-            InitializeMinFitInDims(textures);
-        }
-
-        void InitializeMinFitInDims(Texture2D[] textures)
-        {
-            minFitInDims = new int2(textures[0].width, textures[0].height);
-            for (int i = 1; i < textures.Length; i++)
-            {
-                int2 fitInDims = new int2(textures[i].width, textures[i].height);
-                if (fitInDims.x < minFitInDims.y)
-                {
-                    minFitInDims.x = fitInDims.x;
-                }
-
-                if (fitInDims.y < minFitInDims.y)
-                {
-                    minFitInDims.y = fitInDims.y;
-                }
-            }
         }
 
         public override void PackStep(Texture2D texture, out Sprite packedSprite, out int2 atlasDimsOut)
@@ -83,10 +66,14 @@ namespace Orazum.SpriteAtlas
             PrivatePackStep(packedSprite.Dims, out int2 fitInPos);
             packedSprite.Pos = fitInPos;
             atlasDimsOut = atlasDims;
+
+            placedSprites[lastPlacedSpriteIndex + 1] = packedSprite;
+            lastPlacedSpriteIndex++;
         }
 
         void PrivatePackStep(in int2 fitInDims, out int2 fitInPos)
         {
+            Debug.Log("1");
             if (FitInWithoutAtlasIncrease(fitInDims, out fitInPos))
             {
                 return;
@@ -201,22 +188,57 @@ namespace Orazum.SpriteAtlas
         }
         bool EvaluateGroupWithoutAtlasIncrease(in int2 fitInDims, List<FreeSprite> group, out int2 fitInPos)
         {
-            /// It is also possible to use minimal freeAreaLeft heuristic, but I decided to not implement it now.
-            /// It does not consider the order in which group's sprites are supplied, thus it is a point in which one can improve this method
-            Sprite mergedSprite = new Sprite(group[0].Pos, group[0].Dims);
-            if (CanFitInMergedBorders(fitInDims))
+            int4 groupBorders = group[0].SpriteBorders;
+            for (int i = 1; i < group.Count; i++)
             {
-                fitInPos = mergedSprite.Pos;
-                return true;
+                int4 borders = group[i].SpriteBorders;
+                groupBorders.xz = math.min(groupBorders.xz, borders.xz);
+                groupBorders.yw = math.max(groupBorders.yw, borders.yw);
             }
 
-            for (int i = 0; i < group.Count; i++)
+            FreeSprite groupSprite = new FreeSprite(groupBorders);
+            List<FreeSprite> canditates = new List<FreeSprite>();
+            canditates.Add(groupSprite);
+
+            List<Sprite> intersectingPlacedSprites = new List<Sprite>(lastPlacedSpriteIndex);
+            for (int i = 0; i < lastPlacedSpriteIndex; i++)
             {
-                Sprite toMerge = new Sprite(group[i].Pos, group[i].Dims);
-                UpdateMergedBorders(toMerge);
-                if (CanFitInMergedBorders(fitInDims))
+                if (groupSprite.Intersect(placedSprites[i]))
                 {
-                    fitInPos = mergedSprite.Pos;
+                    intersectingPlacedSprites.Add(placedSprites[i]);
+                }
+            }
+
+            bool hasIntersection = true;
+            const int iterationLimit = 1000;
+            int iterationCount = 0;
+            while (hasIntersection)
+            {
+                iterationCount++;
+                if (iterationCount > iterationLimit)
+                {
+                    Debug.LogError("iterations");
+                    break;
+                }
+
+                hasIntersection = false;
+                for (int c = 0; c < canditates.Count; c++)
+                {
+                    ConsiderCanditate(c, out bool didIntersect);
+                    if (didIntersect)
+                    { 
+                        hasIntersection = true;
+                        break;
+                    }
+                }
+            }
+
+            for (int i = 0; i < canditates.Count; i++)
+            {
+                int2 dims = canditates[i].Dims;
+                if (math.all(fitInDims <= dims))
+                {
+                    fitInPos = canditates[i].Pos;
                     return true;
                 }
             }
@@ -224,59 +246,26 @@ namespace Orazum.SpriteAtlas
             fitInPos = new int2(-1, -1);
             return false;
 
-            bool CanFitInMergedBorders(in int2 fitInDims)
+            void ConsiderCanditate(int index, out bool didIntersect)
             {
-                return fitInDims.x < mergedSprite.Dims.x && fitInDims.y < mergedSprite.Dims.y;
-            }
+                FreeSprite canditate = canditates[index];
+                for (int i = 0; i < intersectingPlacedSprites.Count; i++)
+                {
+                    Sprite packed = intersectingPlacedSprites[i];
+                    if (canditate.Intersect(packed, out Sprite intersection))
+                    {
+                        var created = SplitFreeSpriteAfterIntersection(canditate, intersection);
+                        canditates.RemoveAt(index);
+                        foreach (var newSprite in created)
+                        {
+                            canditates.Add(newSprite);
+                        }
+                        didIntersect = true;
+                        return;
+                    }
+                }
 
-            void UpdateMergedBorders(in Sprite toMerge)
-            {
-                if (toMerge.Pos.x > mergedSprite.RightBorder)
-                {
-                    if (toMerge.Pos.y > mergedSprite.TopBorder || toMerge.TopBorder < mergedSprite.Pos.y)
-                    {
-                        // ignore due to complexity related to supply order of orders
-                        // can be implemented in the future
-                    }
-                    else
-                    {
-                        if (toMerge.Pos.y > mergedSprite.Pos.y)
-                        {
-                            mergedSprite.Pos.y = toMerge.Pos.y;
-                        }
-                        if (toMerge.TopBorder < mergedSprite.TopBorder)
-                        {
-                            int delta = toMerge.TopBorder - mergedSprite.TopBorder;
-                            int2 newDims = new int2(mergedSprite.Dims.x, mergedSprite.Dims.y + delta);
-                            mergedSprite.Dims += newDims;
-                        }
-                    }
-                }
-                else if (toMerge.Pos.y > mergedSprite.TopBorder)
-                {
-                    if (toMerge.Pos.x > mergedSprite.RightBorder || toMerge.RightBorder < mergedSprite.Pos.x)
-                    {
-                        // ignore due to complexity related to supply order of orders
-                        // can be implemented in the future
-                    }
-                    else
-                    {
-                        if (toMerge.Pos.x > mergedSprite.Pos.x)
-                        {
-                            mergedSprite.Pos.x = toMerge.Pos.x;
-                        }
-                        if (toMerge.RightBorder < mergedSprite.RightBorder)
-                        {
-                            int delta = toMerge.RightBorder - mergedSprite.RightBorder;
-                            int2 newDims = new int2(mergedSprite.Dims.x + delta, mergedSprite.Dims.y);
-                            mergedSprite.Dims = newDims;
-                        }
-                    }
-                }
-                else
-                {
-                    // ignore due to complexity related to supply order of orders
-                }
+                didIntersect = false;
             }
         }
 
@@ -290,43 +279,52 @@ namespace Orazum.SpriteAtlas
                     continue;
                 }
 
-                SplitFreeSpriteAfterIntersection(group[i], intersection);
+                var createdSprites = SplitFreeSpriteAfterIntersection(group[i], intersection);
+                foreach (var s in createdSprites)
+                {
+                    AddFreeSprite(s);
+                }
+
                 freeSprites.RemoveNode(group[i].Id);
             }
         }
-        void SplitFreeSpriteAfterIntersection(FreeSprite freeSprite, in Sprite intersection)
+        List<FreeSprite> SplitFreeSpriteAfterIntersection(FreeSprite freeSprite, in Sprite intersection)
         {
             int leftSize = intersection.Pos.x - freeSprite.Pos.x;
             int bottomSize = intersection.Pos.y - freeSprite.Pos.y;
             int rightSize = freeSprite.RightBorder - intersection.RightBorder;
             int topSize = freeSprite.TopBorder - intersection.TopBorder;
 
+            List<FreeSprite> createdSprites = new List<FreeSprite>(4);
+
             if (leftSize > 0)
             {
                 int2 leftDims = new int2(leftSize, freeSprite.Dims.y - topSize);
-                AddFreeSprite(freeSprite.Pos, leftDims, new bool2(false, false));
+                createdSprites.Add(new(freeSprite.Pos, leftDims, new bool2(false, false)));
             }
 
             if (bottomSize > 0)
             {
                 int2 bottomDims = new int2(freeSprite.Dims.x - leftSize - rightSize, bottomSize);
                 int2 bottomPos = new int2(freeSprite.Pos.x + leftSize, freeSprite.Pos.y);
-                AddFreeSprite(bottomPos, bottomDims, new bool2(false, false));
+                createdSprites.Add(new(bottomPos, bottomDims, new bool2(false, false)));
             }
 
             if (rightSize > 0)
             {
                 int2 rightDims = new int2(rightSize, freeSprite.Dims.y);
-                int2 rightPos = new int2(freeSprite.RightBorder - rightSize, freeSprite.Pos.y);
-                AddFreeSprite(rightPos, rightDims, freeSprite.IsBorderingAtlas);
+                int2 rightPos = new int2(freeSprite.RightBorder - rightSize + 1, freeSprite.Pos.y);
+                createdSprites.Add(new(rightPos, rightDims, freeSprite.IsBorderingAtlas));
             }
 
             if (topSize > 0)
             {
                 int2 topDims = new int2(freeSprite.Dims.x - rightSize, topSize);
-                int2 topPos = new int2(freeSprite.Pos.x, freeSprite.TopBorder - topSize);
-                AddFreeSprite(topPos, topDims, new bool2(false, freeSprite.IsBorderingAtlas.y));
+                int2 topPos = new int2(freeSprite.Pos.x, freeSprite.TopBorder - topSize + 1);
+                createdSprites.Add(new(topPos, topDims, new bool2(false, freeSprite.IsBorderingAtlas.y)));
             }
+
+            return createdSprites;
         }
 
         bool FitInWithAtlasIncrease(in int2 fitInDims, out int2 fitInPos)
@@ -572,6 +570,11 @@ namespace Orazum.SpriteAtlas
                 IsBorderingAtlas = isBordering
             };
             free.Id = freeSprites.AddNode(free);
+        }
+
+        void AddFreeSprite(FreeSprite sprite)
+        {
+            sprite.Id = freeSprites.AddNode(sprite);
         }
 
         class CanditateForInsertion : IComparable<CanditateForInsertion>

@@ -1,11 +1,12 @@
 using Unity.Mathematics;
 
+using UnityEngine;
 using UnityEngine.Assertions;
 using Orazum.Graphs;
 using static Orazum.Utilities.Math;
 
 namespace Orazum.SpriteAtlas
-{ 
+{
     public class FreeSprite : IAdjacentable<FreeSprite>
     {
         public bool2 IsBorderingAtlas;
@@ -17,6 +18,26 @@ namespace Orazum.SpriteAtlas
         {
             SpriteData.Pos = pos;
             SpriteData.Dims = dims;
+        }
+
+        public FreeSprite(int2 pos, int2 dims, bool2 isBorderingAtlas)
+        {
+            SpriteData = new(pos, dims);
+            IsBorderingAtlas = isBorderingAtlas;
+        }
+
+        public FreeSprite(int4 borders)
+        {
+            SpriteData = new Sprite(borders);
+            Id = -1;
+        }
+
+        public static FreeSprite CloneForEvalutation(FreeSprite toClone)
+        {
+            FreeSprite clone = new FreeSprite(toClone.SpriteData.Pos, toClone.SpriteData.Dims);
+            clone.IsBorderingAtlas = toClone.IsBorderingAtlas;
+            clone.Id = -1;
+            return clone;
         }
 
         public int2 Pos
@@ -79,29 +100,56 @@ namespace Orazum.SpriteAtlas
             return IsBetween(borders.xy, pos.x) && IsBetween(borders.zw, pos.y);
         }
 
-        public bool Intersect(Sprite other, out Sprite intersection)
+        public bool Intersect(Sprite other)
         {
             int4 borders = SpriteBorders;
             int4 otherBorders = other.Borders;
 
-            int4 delta = borders - otherBorders;
-
-            bool horizontalIntersect = math.all(delta.xy > 0) || math.all(delta.xy < 0);
-            bool verticalIntersect = math.all(delta.zw > 0) || math.all(delta.zw < 0);
-            bool isIntersecting = horizontalIntersect && verticalIntersect;
-            if (!isIntersecting)
+            // Implement Separating Axis Theorem
+            if (!DoesOverlap(borders.xy, otherBorders.xy))
             {
-                intersection = new();
                 return false;
             }
 
-            int4 minBorder = int4.zero;
-            minBorder.xz = math.max(borders.xz, otherBorders.xz);
-            minBorder.yw = math.min(borders.yw, otherBorders.yw);
-            Assert.IsTrue(math.all(minBorder.yw > minBorder.xz));
+            if (!DoesOverlap(borders.zw, otherBorders.zw))
+            {
+                return false;
+            }
 
-            intersection = new Sprite(minBorder.xz, minBorder.yw - minBorder.xz);
             return true;
+
+            bool DoesOverlap(int2 lhs, int2 rhs)
+            {
+                bool result;
+                if (lhs.x < rhs.x)
+                {
+                    result = lhs.y > rhs.x;
+                }
+                else
+                {
+                    result = rhs.y > lhs.x;
+                }
+                return result;
+            }
+        }
+
+        public bool Intersect(Sprite other, out Sprite intersection)
+        {
+            int4 borders = SpriteBorders;
+            int4 otherBorders = other.Borders;
+            if (Intersect(other))
+            {
+                int4 minBorder = int4.zero;
+                minBorder.xz = math.max(borders.xz, otherBorders.xz);
+                minBorder.yw = math.min(borders.yw, otherBorders.yw);
+                Assert.IsTrue(math.all(minBorder.yw > minBorder.xz));
+
+                intersection = new Sprite(minBorder);
+                return true;
+            }
+
+            intersection = new();
+            return false;
         }
 
         public bool IsAdjacent(FreeSprite other)
@@ -110,10 +158,6 @@ namespace Orazum.SpriteAtlas
             int4 otherBorders = other.SpriteBorders;
             int4 otherBordersArranged = otherBorders.yxwz;
             int4 delta = math.abs(SpriteBorders - otherBordersArranged);
-
-            // 0, 100, 0, 100
-            // 101, 201, 0, 100
-            // 201, 101, 100, 0
 
             if (math.any(delta == 1))
             {
@@ -138,5 +182,50 @@ namespace Orazum.SpriteAtlas
 
             return false;
         }
+
+        public bool IsAdjacent(FreeSprite other, out Axis adjacencyAxis)
+        {
+            int4 borders = SpriteBorders;
+            int4 otherBorders = other.SpriteBorders;
+            int4 otherBordersArranged = otherBorders.yxwz;
+            int4 delta = math.abs(SpriteBorders - otherBordersArranged);
+
+            if (math.any(delta == 1))
+            {
+                if ((IsBetween(borders.xy, otherBorders.x) ||
+                    IsBetween(borders.xy, otherBorders.y) ||
+                    IsBetween(otherBorders.xy, borders.x) ||
+                    IsBetween(otherBorders.xy, borders.y))
+                    && math.any(delta.zw == 1))
+                {
+                    adjacencyAxis = Axis.Y;
+                    return true;
+                }
+
+                if ((IsBetween(borders.zw, otherBorders.z) ||
+                    IsBetween(borders.zw, otherBorders.w) ||
+                    IsBetween(otherBorders.zw, borders.z) ||
+                    IsBetween(otherBorders.zw, borders.w))
+                    && math.any(delta.xy == 1))
+                {
+                    adjacencyAxis = Axis.X;
+                    return true;
+                }
+            }
+
+            adjacencyAxis = Axis.X;
+            return false;
+        }
+
+        public override string ToString()
+        {
+            return $"FreeSprite Pos({Pos.x} {Pos.y}) Dims({Dims.x} {Dims.y}) {IsBorderingAtlas} {Id}";
+        }
+    }
+
+    public enum Axis
+    {
+        X,
+        Y
     }
 }

@@ -1,6 +1,7 @@
 using System;
 using Unity.Mathematics;
 
+using UnityEngine.Assertions;
 using static Orazum.Utilities.Math;
 
 namespace Orazum.SpriteAtlas
@@ -16,6 +17,12 @@ namespace Orazum.SpriteAtlas
         {
             Pos = pos;
             Dims = dims;
+        }
+
+        public Sprite(int4 borders)
+        {
+            Pos = borders.xz;
+            Dims = borders.yw - borders.xz + new int2(1, 1);
         }
 
         public int4 Borders
@@ -38,7 +45,7 @@ namespace Orazum.SpriteAtlas
         {
             get
             {
-                return Pos.y + Dims.y;
+                return Pos.y + Dims.y - 1;
             }
         }
 
@@ -83,7 +90,7 @@ namespace Orazum.SpriteAtlas
 
         public override string ToString()
         {
-            return $"Sprite(Pos:{Pos}, Dims:{Dims})";
+            return $"Sprite: Pos({Pos.x} {Pos.y}), Dims({Dims.x} {Dims.y})";
         }
     }
 }
