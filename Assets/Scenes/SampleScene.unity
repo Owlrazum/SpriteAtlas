@@ -475,7 +475,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &738591808
 RectTransform:
   m_ObjectHideFlags: 0
@@ -494,7 +494,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: -240, y: 223}
-  m_SizeDelta: {x: 875, y: 1114}
+  m_SizeDelta: {x: 1829, y: 435}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &738591810
 CanvasRenderer:
@@ -617,7 +617,7 @@ MonoBehaviour:
   _minMaxHeight:
     x: 16
     y: 256
-  _texturesFolderPath: Assets/Textures/Random
+  _texturesFolderPath: Assets/Textures/Random/
 --- !u!1 &1041063094
 GameObject:
   m_ObjectHideFlags: 0
@@ -787,5 +787,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a8b436a5f4b7c440eaca3fd59756d411, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _texturesFolderPath: Assets/Textures/OldRandom
-  _spriteAtlasFolderPath: Assets/Textures/Atlases/
+  texturesFolderPath: Assets/Textures/Random/
+  spriteAtlasFolderPath: Assets/Textures/Atlases/

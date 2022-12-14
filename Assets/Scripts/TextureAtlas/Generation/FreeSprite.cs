@@ -1,18 +1,29 @@
 using Unity.Mathematics;
-using Orazum.Graphs;
 
+using UnityEngine;
 using UnityEngine.Assertions;
 
 namespace Orazum.SpriteAtlas
 {
-    public class FreeSprite : IAdjacentable<FreeSprite>
+    public class FreeSprite
     {
         public Sprite SpriteData;
         public bool2 IsBorderingAtlas;
         public int Id { get; set; }
 
+        public FreeSprite(int2 pos, int2 dims, bool2 isBorderingAtlas)
+        {
+            if (math.any(dims == 0))
+            {
+                Debug.LogError("dims are zero! bug");
+            }
+            SpriteData = new(pos, dims);
+            IsBorderingAtlas = isBorderingAtlas;
+        }
+
         public int2 Pos { get { return SpriteData.Pos; } }
         public int2 Dims { get { return SpriteData.Dims; } }
+        public int Area { get { return SpriteData.Area; } }
         public int4 SpriteBorders { get { return SpriteData.Borders; } }
         public int RightBorder { get { return SpriteData.RightBorder; } }
         public int TopBorder { get { return SpriteData.TopBorder; } }
@@ -100,7 +111,7 @@ namespace Orazum.SpriteAtlas
             return false;
         }
 
-        public bool IsAdjacent(FreeSprite other, out Axis adjacencyAxis)
+        public bool IsAdjacent(FreeSprite other, out Axis adjacencySide)
         {
             int4 borders = SpriteBorders;
             int4 otherBorders = other.SpriteBorders;
@@ -115,7 +126,7 @@ namespace Orazum.SpriteAtlas
                     IsBetween(otherBorders.xy, borders.y))
                     && math.any(delta.zw == 1))
                 {
-                    adjacencyAxis = Axis.Y;
+                    adjacencySide = Axis.Y;
                     return true;
                 }
 
@@ -125,18 +136,23 @@ namespace Orazum.SpriteAtlas
                     IsBetween(otherBorders.zw, borders.w))
                     && math.any(delta.xy == 1))
                 {
-                    adjacencyAxis = Axis.X;
+                    adjacencySide = Axis.X;
                     return true;
                 }
             }
 
-            adjacencyAxis = Axis.X;
+            adjacencySide = Axis.X;
             return false;
         }
 
         bool IsBetween(in int2 minMax, int value)
         {
             return value >= minMax.x && value <= minMax.y;
+        }
+
+        public override string ToString()
+        {
+            return $"FreeSprite Pos({Pos.x} {Pos.y}) Dims({Dims.x} {Dims.y}) {IsBorderingAtlas} {Id}";
         }
     }
 

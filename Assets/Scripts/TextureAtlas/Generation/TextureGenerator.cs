@@ -10,7 +10,7 @@ using rnd = UnityEngine.Random;
 
 namespace Orazum.SpriteAtlas
 { 
-    class TextureGenerator : MonoBehaviour
+    public class TextureGenerator : MonoBehaviour
     {
         [SerializeField]
         int2 _minMaxWidth = new int2(16, 256);

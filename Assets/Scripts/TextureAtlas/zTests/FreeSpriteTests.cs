@@ -39,14 +39,7 @@ namespace Orazum.SpriteAtlas.Tests
 
         FreeSprite Create(int2 pos, int2 dims)
         {
-            return new()
-            {
-                SpriteData = new()
-                {
-                    Pos = pos,
-                    Dims = dims
-                }
-            };
+            return new(pos, dims, new bool2(false, false));
         }
 
     }
@@ -60,7 +53,7 @@ namespace Orazum.SpriteAtlas.Tests
 
         public static FreeSprite Clone(this FreeSprite sprite)
         {
-            return new() { SpriteData = sprite.SpriteData };
+            return new(sprite.Pos, sprite.Dims, sprite.IsBorderingAtlas);
         }
     }
 }

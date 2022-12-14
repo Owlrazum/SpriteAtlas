@@ -60,10 +60,10 @@ namespace Orazum.SpriteAtlas.Tests
 
         IEnumerator StepPackingCoroutine()
         {
-            Texture2D[] textures = _atlasGenerator.GetTexturesForSteppedPacking();
+            Texture2D[] textures = _atlasGenerator.GetTextures();
 
             AtlasPackerByFreeSpritesAndAdjacency packer = new();
-            packer.PrepareAndPackFirst(textures);
+            packer.PrepareAndPackFirstTexture(textures);
             float2 textureDims = new float2(textures[0].width, textures[0].height);
             CreateTestSprite(new float3(0, 0, 0), textureDims);
             TestSprite testAtlas = CreateTestAtlas(textureDims);

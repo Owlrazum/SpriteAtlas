@@ -3,6 +3,10 @@ using UnityEngine.Assertions;
 
 namespace Orazum.Graphs
 {
+    /// <summary>
+    /// This class was replaced with non generic class for freeSprite only, 
+    /// because of custom logic required for merging of freeSprites.
+    /// </summary>
     public class AdjacencyList<T> where T : IAdjacentable<T>
     {
         Dictionary<int, T> nodes;
