@@ -1,10 +1,11 @@
 {
     "name": "Orazum.SpriteAtlas.Tests",
-    "rootNamespace": "",
+    "rootNamespace": "Orazum.SpriteAtlas.Tests",
     "references": [
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner",
         "aAssemblySpriteAtlas",
+        "aAssemblyUtilities",
         "Unity.Mathematics"
     ],
     "includePlatforms": [

@@ -7,9 +7,9 @@ using Unity.Mathematics;
 
 using Orazum.Utilities;
 
-namespace Orazum.SpriteAtlas
+namespace Orazum.SpriteAtlas.Tests
 {
-    public class TestPacking : MonoBehaviour
+    class TestPacking : MonoBehaviour
     {
         [SerializeField]
         TextureGenerator _textureGenerator;

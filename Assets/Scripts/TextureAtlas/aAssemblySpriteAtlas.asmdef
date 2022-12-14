@@ -1,6 +1,6 @@
 {
     "name": "aAssemblySpriteAtlas",
-    "rootNamespace": "",
+    "rootNamespace": "Orazum.SpriteAtlas",
     "references": [
         "GUID:f2be7a2bb7cc24cbbaa29cbfb1004c34",
         "GUID:237eab18fc5184722a2d959a822b9ee4",

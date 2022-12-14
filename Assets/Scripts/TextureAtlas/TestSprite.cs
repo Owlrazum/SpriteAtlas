@@ -5,7 +5,7 @@ using UnityEngine.UI;
 
 using Orazum.Utilities;
 
-namespace Orazum.SpriteAtlas
+namespace Orazum.SpriteAtlas.Tests
 {
     [RequireComponent(typeof(Image))]
     class TestSprite : MonoBehaviour

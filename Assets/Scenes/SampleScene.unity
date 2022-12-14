@@ -787,5 +787,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a8b436a5f4b7c440eaca3fd59756d411, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _texturesFolderPath: Assets/Textures/Random
+  _texturesFolderPath: Assets/Textures/OldRandom
   _spriteAtlasFolderPath: Assets/Textures/Atlases/

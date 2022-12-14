@@ -13,8 +13,6 @@ namespace Orazum.SpriteAtlas
     /// It should be noted that the origin is in lower left corner.
     class AtlasPackerByFreeSpritesAndAdjacency : AtlasPacker
     {
-        const int CycleLimit = 10000;
-
         int2 atlasDims;
 
         AdjacencyList<FreeSprite> freeSprites;

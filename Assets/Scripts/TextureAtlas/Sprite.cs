@@ -2,7 +2,7 @@ using System;
 using Unity.Mathematics;
 
 namespace Orazum.SpriteAtlas
-{ 
+{
     public struct Sprite : IEquatable<Sprite>
     {
         public int2 Pos;
@@ -10,10 +10,20 @@ namespace Orazum.SpriteAtlas
 
         public int Area { get { return Dims.x * Dims.y; } }
 
+        public int4 Borders { get { return new int4(Pos.x, Pos.x + Dims.x - 1, Pos.y, Pos.y + Dims.y - 1); } }
+        public int RightBorder { get { return Pos.x + Dims.x - 1; } }
+        public int TopBorder { get { return Pos.y + Dims.y - 1; } }
+
         public Sprite(int2 pos, int2 dims)
         {
             Pos = pos;
             Dims = dims;
+        }
+
+        public Sprite(int4 borders)
+        {
+            Pos = borders.xz;
+            Dims = borders.yw - borders.xz + new int2(1, 1);
         }
 
         public bool Equals(Sprite other)
@@ -32,12 +42,12 @@ namespace Orazum.SpriteAtlas
         }
 
         public static bool operator ==(Sprite lhs, Sprite rhs)
-        { 
+        {
             return math.all(lhs.Pos == rhs.Pos) && math.all(lhs.Dims == rhs.Dims);
         }
 
         public static bool operator !=(Sprite lhs, Sprite rhs)
-        { 
+        {
             return math.any(lhs.Pos != rhs.Pos) || math.any(lhs.Dims != rhs.Dims);
         }
 
@@ -48,7 +58,7 @@ namespace Orazum.SpriteAtlas
 
         public override string ToString()
         {
-            return $"Sprite(Pos:{Pos}, Dims:{Dims})";
+            return $"Sprite: Pos({Pos.x} {Pos.y}) Dims({Dims.x} {Dims.y})";
         }
     }
 }
