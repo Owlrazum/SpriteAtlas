@@ -100,8 +100,8 @@ namespace Orazum.SpriteAtlas
 
         TestSprite CreateFreeSprite(FreeSprite freeSprite)
         { 
-            float3 pos = new float3(freeSprite.Pos.x, freeSprite.Pos.y, 0);
-            float2 size = new float2(freeSprite.Dims.x, freeSprite.Dims.y);
+            float3 pos = new float3(freeSprite.SpriteData.Pos.x, freeSprite.SpriteData.Pos.y, 0);
+            float2 size = new float2(freeSprite.SpriteData.Dims.x, freeSprite.SpriteData.Dims.y);
             TestSprite testSprite = Instantiate(_testFreeSpritePrefab, pos, Quaternion.identity, _debugginParentInCanvas);
             testSprite.RandomizeColor(0.5f, 0.5f);
             testSprite.SetSize(size);

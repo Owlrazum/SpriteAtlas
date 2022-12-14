@@ -742,7 +742,7 @@ MonoBehaviour:
     type: 3}
   _testFreeSpritePrefab: {fileID: 8518816498300865280, guid: 900ed66b2500a443681d64b000277d81,
     type: 3}
-  _steppingDeltaTime: 1
+  _steppingDeltaTime: 0.3
 --- !u!1 &1788872788
 GameObject:
   m_ObjectHideFlags: 0
