@@ -1,9 +1,10 @@
 using System;
 using Unity.Mathematics;
 
-namespace Orazum.SpriteAtlas
+namespace Orazum.SpriteAtlas.Generation
 {
-    public struct Sprite : IEquatable<Sprite>
+    [System.Serializable]
+    public struct SpriteManaged : IEquatable<SpriteManaged>
     {
         public int2 Pos;
         public int2 Dims;
@@ -14,26 +15,26 @@ namespace Orazum.SpriteAtlas
         public int RightBorder { get { return Pos.x + Dims.x - 1; } }
         public int TopBorder { get { return Pos.y + Dims.y - 1; } }
 
-        public Sprite(int2 pos, int2 dims)
+        public SpriteManaged(int2 pos, int2 dims)
         {
             Pos = pos;
             Dims = dims;
         }
 
-        public Sprite(int4 borders)
+        public SpriteManaged(int4 borders)
         {
             Pos = borders.xz;
             Dims = borders.yw - borders.xz + new int2(1, 1);
         }
 
-        public bool Equals(Sprite other)
+        public bool Equals(SpriteManaged other)
         {
             return math.all(Pos == other.Pos) && math.all(Dims == other.Dims);
         }
 
         public override bool Equals(object obj)
         {
-            if (obj is Sprite other)
+            if (obj is SpriteManaged other)
             {
                 return Equals(other);
             }
@@ -41,12 +42,12 @@ namespace Orazum.SpriteAtlas
             return false;
         }
 
-        public static bool operator ==(Sprite lhs, Sprite rhs)
+        public static bool operator ==(SpriteManaged lhs, SpriteManaged rhs)
         {
             return math.all(lhs.Pos == rhs.Pos) && math.all(lhs.Dims == rhs.Dims);
         }
 
-        public static bool operator !=(Sprite lhs, Sprite rhs)
+        public static bool operator !=(SpriteManaged lhs, SpriteManaged rhs)
         {
             return math.any(lhs.Pos != rhs.Pos) || math.any(lhs.Dims != rhs.Dims);
         }

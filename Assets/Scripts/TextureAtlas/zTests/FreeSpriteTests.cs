@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using NUnit.Framework;
 using Unity.Mathematics;
 
-namespace Orazum.SpriteAtlas.Tests
+namespace Orazum.SpriteAtlas.Generation.Tests
 {
     class FreeSpriteTests
     {

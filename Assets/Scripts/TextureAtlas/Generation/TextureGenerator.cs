@@ -8,35 +8,33 @@ using Orazum.Utilities;
 
 using rnd = UnityEngine.Random;
 
-namespace Orazum.SpriteAtlas
+namespace Orazum.SpriteAtlas.Generation
 { 
     public class TextureGenerator : MonoBehaviour
     {
         [SerializeField]
-        int2 _minMaxWidth = new int2(16, 256);
+        int2 minMaxWidth = new int2(16, 256);
 
         [SerializeField]
-        int2 _minMaxHeight = new int2(16, 256);
+        int2 minMaxHeight = new int2(16, 256);
 
-        [SerializeField]
-        string _texturesFolderPath = "Assets/Textures/";
+        Texture2D[] textures;
 
-        Texture2D[] _sprites;
-
-        public void GenerateRandomTextures(int texturesCount)
+        public void GenerateRandomTextures(int texturesCount, string folderPath)
         { 
-            _sprites = new Texture2D[texturesCount];
+            textures = new Texture2D[texturesCount];
             for (int i = 0; i < texturesCount; i++)
             {
-                _sprites[i] = GenerateRandomTextureBordered(RandomColor());
-                AssetDatabase.CreateAsset(_sprites[i], _texturesFolderPath + $"rnd_{i}.asset");
+                textures[i] = GenerateRandomTextureBordered(RandomColor());
+                AssetDatabase.CreateAsset(textures[i], folderPath + $"rnd_{i}.asset");
             }
+            AssetDatabase.SaveAssets();
         }
 
         Texture2D GenerateRandomTexture()
         {
-            int width = rnd.Range(_minMaxWidth.x, _minMaxWidth.y + 1);
-            int height = rnd.Range(_minMaxHeight.x, _minMaxHeight.y + 1);
+            int width = rnd.Range(minMaxWidth.x, minMaxWidth.y + 1);
+            int height = rnd.Range(minMaxHeight.x, minMaxHeight.y + 1);
 
             var texture = new Texture2D(width, height, TextureFormat.RGBA32, false);
 
@@ -50,8 +48,8 @@ namespace Orazum.SpriteAtlas
 
         Texture2D GenerateRandomTextureBordered(Color32 borderColor)
         { 
-            int width = rnd.Range(_minMaxWidth.x, _minMaxWidth.y + 1);
-            int height = rnd.Range(_minMaxHeight.x, _minMaxHeight.y + 1);
+            int width = rnd.Range(minMaxWidth.x, minMaxWidth.y + 1);
+            int height = rnd.Range(minMaxHeight.x, minMaxHeight.y + 1);
 
             var texture = new Texture2D(width, height, TextureFormat.RGBA32, false);
 

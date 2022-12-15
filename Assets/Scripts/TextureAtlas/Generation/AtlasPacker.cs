@@ -5,20 +5,20 @@ using Unity.Mathematics;
 
 using UnityEngine;
 
-namespace Orazum.SpriteAtlas
+namespace Orazum.SpriteAtlas.Generation
 {
     /// <summary>
     /// The idea is to have sprites all located in the origin, 
     /// with packer gradually placing them in the correct positions
     /// </summary>
-    abstract class AtlasPacker
+    public abstract class AtlasPacker
     {
-        public abstract void Pack(Texture2D[] textures, out Sprite[] spritesToPack, out int2 atlasDims);
+        public abstract void Pack(Texture2D[] textures, out SpriteManaged[] spritesToPack, out int2 atlasDims);
 
         public abstract void PrepareAndPackFirstTexture(Texture2D[] textures);
-        public abstract void PackStep(Texture2D texture, out Sprite packedSprite, out int2 atlasDims);
+        public abstract void PackStep(Texture2D texture, out SpriteManaged packedSprite, out int2 atlasDims);
 
-        protected void SortByArea(Sprite[] sprites)
+        protected void SortByArea(SpriteManaged[] sprites)
         {
             Array.Sort(sprites, new SpriteAreaComparer());
         }
@@ -28,7 +28,7 @@ namespace Orazum.SpriteAtlas
             Array.Sort(textures, new TextureAreaComparer());
         }
 
-        protected void SortByMaxDimension(Sprite[] sprites)
+        protected void SortByMaxDimension(SpriteManaged[] sprites)
         {
             Array.Sort(sprites, new SpriteDimensionComparer());
         }
@@ -39,9 +39,9 @@ namespace Orazum.SpriteAtlas
         }
     }
 
-    class SpriteAreaComparer : IComparer<Sprite>
+    class SpriteAreaComparer : IComparer<SpriteManaged>
     {
-        public int Compare(Sprite s1, Sprite s2)
+        public int Compare(SpriteManaged s1, SpriteManaged s2)
         {
             int a1 = s1.Dims.x * s1.Dims.y;
             int a2 = s2.Dims.x * s2.Dims.y;
@@ -49,9 +49,9 @@ namespace Orazum.SpriteAtlas
         }
     }
 
-    class SpriteDimensionComparer : IComparer<Sprite>
+    class SpriteDimensionComparer : IComparer<SpriteManaged>
     {
-        public int Compare(Sprite s1, Sprite s2)
+        public int Compare(SpriteManaged s1, SpriteManaged s2)
         {
             int m1 = math.max(s1.Dims.x, s1.Dims.y);
             int m2 = math.max(s2.Dims.x, s2.Dims.y);

@@ -1,7 +1,3 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
-
 using Unity.Collections;
 using Unity.Mathematics;
 
@@ -10,31 +6,29 @@ using UnityEditor;
 
 using Orazum.Utilities;
 
-namespace Orazum.SpriteAtlas
+namespace Orazum.SpriteAtlas.Generation
 {
-    class AtlasSpriteGenerator : MonoBehaviour
+    public class AtlasSpriteGenerator
     {
-        [SerializeField]
-        string texturesFolderPath = "Assets/Textures/Random/";
-
-        [SerializeField]
-        string spriteAtlasFolderPath = "Assets/Textures/Atlases/";
-
         Texture2D[] textures;
 
-        public void GenerateSpriteAtlas()
+        public void GenerateAndSaveAtlas(Texture2D[] textures, string spriteAtlasFilePath)
         {
-            textures = GetTextures();
-
             AtlasPackerByFreeSpritesAndAdjacency packer = new(0.2f, 2500, 0.7f);
-            packer.Pack(textures, out Sprite[] sprites, out int2 atlasDims);
+            packer.Pack(textures, out SpriteManaged[] sprites, out int2 atlasDims);
 
+            var atlas = CombineTextures(textures, sprites, atlasDims);
+            SaveAtlas(atlas, spriteAtlasFilePath);
+        }
+
+        public Texture2D CombineTextures(Texture2D[] textures, SpriteManaged[] packedSprites, int2 atlasDims)
+        {
             var atlas = new Texture2D(atlasDims.x, atlasDims.y, TextureFormat.RGBA32, false);
             NativeArray<Color32> atlasData = new NativeArray<Color32>(atlasDims.x * atlasDims.y, Allocator.Temp);
 
-            for (int i = 0; i < sprites.Length; i++)
+            for (int i = 0; i < packedSprites.Length; i++)
             {
-                Sprite sprite = sprites[i];
+                SpriteManaged sprite = packedSprites[i];
                 NativeArray<Color32> textureData = textures[i].GetPixelData<Color32>(0);
 
                 for (int y = 0; y < sprite.Dims.y; y++)
@@ -51,22 +45,13 @@ namespace Orazum.SpriteAtlas
 
             atlas.SetPixelData<Color32>(atlasData, mipLevel: 0);
             atlas.Apply(updateMipmaps: false);
-
-            AssetDatabase.CreateAsset(atlas, spriteAtlasFolderPath + $"atlas.asset");
+            return atlas;
         }
 
-        public Texture2D[] GetTextures()
+        public void SaveAtlas(Texture2D atlas, string filePath)
         {
-            string[] assetGUIDs = AssetDatabase.FindAssets($"t:texture2D", new[] { texturesFolderPath });
-            Texture2D[] textures = new Texture2D[assetGUIDs.Length];
-            for (int i = 0; i < assetGUIDs.Length; i++)
-            {
-                string assetPath = AssetDatabase.GUIDToAssetPath(assetGUIDs[i]);
-                Texture2D texture = AssetDatabase.LoadAssetAtPath<Texture2D>(assetPath);
-                textures[i] = texture;
-            }
-
-            return textures;
+            AssetDatabase.CreateAsset(atlas, filePath);
+            AssetDatabase.SaveAssets();
         }
     }
 }

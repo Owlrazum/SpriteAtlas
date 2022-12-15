@@ -6,10 +6,10 @@ using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.Assertions;
 
-namespace Orazum.SpriteAtlas
+namespace Orazum.SpriteAtlas.Generation
 {
     /// It should be noted that the origin is in lower left corner.
-    class AtlasPackerByFreeSpritesAndAdjacency : AtlasPacker
+    public class AtlasPackerByFreeSpritesAndAdjacency : AtlasPacker
     {
         readonly float MaxAreaLoss;
         readonly float MaxAreaLossRatio;
@@ -19,7 +19,7 @@ namespace Orazum.SpriteAtlas
 
         FreeSpriteAdjacencyList freeSprites;
 
-        List<CanditateForInsertion> _canditatesBuffer;
+        List<CanditateForInsertion> canditatesBuffer;
 
         public AtlasPackerByFreeSpritesAndAdjacency(
             float maxAreaLoss = 50 * 50, 
@@ -31,11 +31,11 @@ namespace Orazum.SpriteAtlas
             MaxAtlasIncreaseOnFit = maxAtlasIncreaseOnFit;
         }
 
-        public override void Pack(Texture2D[] textures, out Sprite[] packedSprites, out int2 atlasDimsOut)
+        public override void Pack(Texture2D[] textures, out SpriteManaged[] packedSprites, out int2 atlasDimsOut)
         {
             PrepareAndPackFirstTexture(textures);
 
-            packedSprites = new Sprite[textures.Length];
+            packedSprites = new SpriteManaged[textures.Length];
             for (int i = 0; i < textures.Length; i++)
             {
                 packedSprites[i] = new(int2.zero, new int2(textures[i].width, textures[i].height));
@@ -54,11 +54,11 @@ namespace Orazum.SpriteAtlas
         {
             SortByArea(textures);
             freeSprites = new(MaxAreaLossRatio, MaxAreaLoss, textures.Length, 5);
-            _canditatesBuffer = new(textures.Length / 2);
+            canditatesBuffer = new(textures.Length / 2);
             atlasDims = new int2(textures[0].width, textures[0].height);
         }
 
-        public override void PackStep(Texture2D texture, out Sprite packedSprite, out int2 atlasDimsOut)
+        public override void PackStep(Texture2D texture, out SpriteManaged packedSprite, out int2 atlasDimsOut)
         {
             packedSprite = new(int2.zero, new int2(texture.width, texture.height));
             PrivatePackStep(packedSprite.Dims, out int2 fitInPos);
@@ -94,7 +94,7 @@ namespace Orazum.SpriteAtlas
             {
                 if (freeSprites.HasNode(i))
                 {
-                    Sprite freeSprite = freeSprites.GetNode(i).SpriteData;
+                    SpriteManaged freeSprite = freeSprites.GetNode(i).SpriteData;
 
                     if (math.any(fitInDims > freeSprite.Dims))
                     {
@@ -108,7 +108,7 @@ namespace Orazum.SpriteAtlas
                         return true;
                     }
 
-                    _canditatesBuffer.Add(new()
+                    canditatesBuffer.Add(new()
                     {
                         NodeIndex = i,
                         FreeAreaLeft = freeSprite.Area - (fitInDims.x * fitInDims.y)
@@ -116,18 +116,18 @@ namespace Orazum.SpriteAtlas
                 }
             }
 
-            if (_canditatesBuffer.Count > 0)
+            if (canditatesBuffer.Count > 0)
             {
-                _canditatesBuffer.Sort();
-                int choiceIndex = _canditatesBuffer[0].NodeIndex;
+                canditatesBuffer.Sort();
+                int choiceIndex = canditatesBuffer[0].NodeIndex;
                 FreeSprite freeSprite = freeSprites.GetNode(choiceIndex);
                 Assert.IsTrue(math.all(freeSprite.SpriteData.Dims >= fitInDims));
 
                 fitInPos = freeSprite.SpriteData.Pos;
+                freeSprites.RemoveIfFound(choiceIndex); // important first to remove from adjacency list, before any merge, of loss and incorrect behaviour is possible.
                 SplitAfterFit(freeSprite, fitInDims);
-                freeSprites.RemoveIfFound(choiceIndex);
 
-                _canditatesBuffer.Clear();
+                canditatesBuffer.Clear();
                 return true;
             }
 
@@ -136,7 +136,7 @@ namespace Orazum.SpriteAtlas
 
             void SplitAfterFit(in FreeSprite toSplitFreeSprite, in int2 fitInDims)
             {
-                Sprite toSplit = toSplitFreeSprite.SpriteData;
+                SpriteManaged toSplit = toSplitFreeSprite.SpriteData;
 
                 int rightSize = toSplit.Dims.x - fitInDims.x;
                 if (rightSize > 0)

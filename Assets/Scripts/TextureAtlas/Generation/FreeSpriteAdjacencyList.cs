@@ -4,7 +4,7 @@ using Unity.Mathematics;
 
 using UnityEngine;
 
-namespace Orazum.SpriteAtlas
+namespace Orazum.SpriteAtlas.Generation
 {
     /// <summary>
     /// This class was replaced with non generic class for freeSprite only, 

@@ -7,27 +7,10 @@ namespace Orazum.SpriteAtlas
         public int Y;
         public int Width;
         public int Height;
-    }
 
-#if !UNITY_EDITOR
-    public static void SaveAtlas(string filePath, YourSpriteAtlas atlas)
-    {
-        // implement this
+        public override string ToString()
+        {
+            return $"Pos:{X} {Y}, Dimensions:{Width} {Height}";
+        }
     }
-
-    public static YourSpriteAtlas LoadAtlas(string filePath)
-    {
-        // implement this
-    }
-
-    public static string[] GetSpriteNames(YourSpriteAtlas atlas)
-    {
-        // implement this 
-    }
-
-    public static SpriteInfo GetSpriteByName(YourSpriteAtlas atlas, string name)
-    {
-        // implement this
-    }
-#endif
 }

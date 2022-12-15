@@ -3,11 +3,11 @@ using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.Assertions;
 
-namespace Orazum.SpriteAtlas
+namespace Orazum.SpriteAtlas.Generation
 {
     public class FreeSprite
     {
-        public Sprite SpriteData;
+        public SpriteManaged SpriteData;
         public bool2 IsBorderingAtlas;
         public int Id { get; set; }
 
@@ -28,7 +28,7 @@ namespace Orazum.SpriteAtlas
         public int RightBorder { get { return SpriteData.RightBorder; } }
         public int TopBorder { get { return SpriteData.TopBorder; } }
 
-        public bool DoesIntersect(Sprite other)
+        public bool DoesIntersect(SpriteManaged other)
         {
             int4 borders = SpriteBorders;
             int4 otherBorders = other.Borders;
@@ -61,7 +61,7 @@ namespace Orazum.SpriteAtlas
             }
         }
 
-        public bool DoesIntersect(Sprite other, out Sprite intersection)
+        public bool DoesIntersect(SpriteManaged other, out SpriteManaged intersection)
         {
             int4 borders = SpriteBorders;
             int4 otherBorders = other.Borders;
@@ -72,7 +72,7 @@ namespace Orazum.SpriteAtlas
                 minBorder.yw = math.min(borders.yw, otherBorders.yw);
                 Assert.IsTrue(math.all(minBorder.yw > minBorder.xz));
 
-                intersection = new Sprite(minBorder);
+                intersection = new SpriteManaged(minBorder);
                 return true;
             }
 
