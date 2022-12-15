@@ -26,7 +26,7 @@ namespace Orazum.SpriteAtlas
         {
             textures = GetTextures();
 
-            AtlasPackerByFreeSpritesAndAdjacency packer = new();
+            AtlasPackerByFreeSpritesAndAdjacency packer = new(0.2f, 2500, 0.7f);
             packer.Pack(textures, out Sprite[] sprites, out int2 atlasDims);
 
             var atlas = new Texture2D(atlasDims.x, atlasDims.y, TextureFormat.RGBA32, false);

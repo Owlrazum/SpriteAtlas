@@ -11,13 +11,25 @@ namespace Orazum.SpriteAtlas
     /// It should be noted that the origin is in lower left corner.
     class AtlasPackerByFreeSpritesAndAdjacency : AtlasPacker
     {
-        const float MaxAreaLossRatio = 0.2f;
-        const float MaxAreaLoss = 50 * 50;
+        readonly float MaxAreaLoss;
+        readonly float MaxAreaLossRatio;
+        readonly float MaxAtlasIncreaseOnFit;
+
         int2 atlasDims;
 
         FreeSpriteAdjacencyList freeSprites;
 
         List<CanditateForInsertion> _canditatesBuffer;
+
+        public AtlasPackerByFreeSpritesAndAdjacency(
+            float maxAreaLoss = 50 * 50, 
+            float maxAreaLossRatio = 0.2f, 
+            float maxAtlasIncreaseOnFit = 0.5f)
+        {
+            MaxAreaLoss = maxAreaLoss;
+            MaxAreaLossRatio = maxAreaLossRatio;
+            MaxAtlasIncreaseOnFit = maxAtlasIncreaseOnFit;
+        }
 
         public override void Pack(Texture2D[] textures, out Sprite[] packedSprites, out int2 atlasDimsOut)
         {
@@ -26,7 +38,7 @@ namespace Orazum.SpriteAtlas
             packedSprites = new Sprite[textures.Length];
             for (int i = 0; i < textures.Length; i++)
             {
-                packedSprites[i] = new (int2.zero, new int2(textures[i].width, textures[i].height));
+                packedSprites[i] = new(int2.zero, new int2(textures[i].width, textures[i].height));
             }
 
             for (int i = 1; i < packedSprites.Length; i++)
@@ -128,7 +140,7 @@ namespace Orazum.SpriteAtlas
 
                 int rightSize = toSplit.Dims.x - fitInDims.x;
                 if (rightSize > 0)
-                { 
+                {
                     AddFreeSprite(
                         pos: new int2(toSplit.Pos.x + fitInDims.x, toSplit.Pos.y),
                         dims: new int2(rightSize, toSplit.Dims.y),
@@ -138,7 +150,7 @@ namespace Orazum.SpriteAtlas
 
                 int topSize = toSplit.Dims.y - fitInDims.y;
                 if (topSize > 0)
-                { 
+                {
                     AddFreeSprite(
                         pos: new int2(toSplit.Pos.x, toSplit.Pos.y + fitInDims.y),
                         dims: new int2(fitInDims.x, topSize),
@@ -147,7 +159,7 @@ namespace Orazum.SpriteAtlas
                 }
             }
         }
-        
+
         bool FitInWithAtlasIncrease(in int2 fitInDims, out int2 fitInPos)
         {
             for (int i = 0; i < freeSprites.IdCount; i++)
@@ -155,18 +167,26 @@ namespace Orazum.SpriteAtlas
                 if (freeSprites.HasNode(i))
                 {
                     FreeSprite free = freeSprites.GetNode(i);
-                    if (fitInDims.x <= free.SpriteData.Dims.x && free.IsBorderingAtlas.y)
+                    if (fitInDims.x <= free.Dims.x && free.IsBorderingAtlas.y)
                     {
-                        freeSprites.RemoveIfFound(i);
-                        PlaceIntoFreeSpriteWithVerticalIncrease(free, fitInDims, out fitInPos);
-                        return true;
+                        int verticalIncrease = free.Pos.y + fitInDims.y - atlasDims.y;
+                        if (verticalIncrease / (float)fitInDims.y < 0.5f)
+                        {
+                            freeSprites.RemoveIfFound(i);
+                            PlaceIntoFreeSpriteWithVerticalIncrease(free, fitInDims, out fitInPos);
+                            return true;
+                        }
                     }
 
                     if (fitInDims.y <= free.SpriteData.Dims.y && free.IsBorderingAtlas.x)
                     {
-                        freeSprites.RemoveIfFound(i);
-                        PlaceIntoFreeSpriteWithHorizontalIncrease(free, fitInDims, out fitInPos);
-                        return true;
+                        int horizontalIncrease = free.Pos.x + fitInDims.x - atlasDims.x;
+                        if (horizontalIncrease / (float)fitInDims.x < 0.5f)
+                        {
+                            freeSprites.RemoveIfFound(i);
+                            PlaceIntoFreeSpriteWithHorizontalIncrease(free, fitInDims, out fitInPos);
+                            return true;
+                        }
                     }
                 }
             }
