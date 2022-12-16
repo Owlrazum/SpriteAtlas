@@ -14,7 +14,7 @@ namespace Orazum.SpriteAtlas.Generation
 
         public void GenerateAndSaveAtlas(Texture2D[] textures, string spriteAtlasFilePath)
         {
-            AtlasPackerByFreeSpritesAndAdjacency packer = new(0.2f, 2500, 0.7f);
+            AtlasPackerByFreeSpritesAndAdjacency packer = new();
             packer.Pack(textures, out SpriteManaged[] sprites, out int2 atlasDims);
 
             var atlas = CombineTextures(textures, sprites, atlasDims);

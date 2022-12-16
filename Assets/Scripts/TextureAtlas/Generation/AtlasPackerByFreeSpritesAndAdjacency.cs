@@ -24,7 +24,7 @@ namespace Orazum.SpriteAtlas.Generation
         public AtlasPackerByFreeSpritesAndAdjacency(
             float maxAreaLoss = 50 * 50, 
             float maxAreaLossRatio = 0.2f, 
-            float maxAtlasIncreaseOnFit = 0.5f)
+            float maxAtlasIncreaseOnFit = 0.7f)
         {
             MaxAreaLoss = maxAreaLoss;
             MaxAreaLossRatio = maxAreaLossRatio;

@@ -7,7 +7,6 @@ using Unity.Mathematics;
 using Orazum.SpriteAtlas.Generation;
 using Texture = UnityEngine.Texture2D;
 
-// TODO: Somehow, different results are produced. when used with two test methods.
 namespace Orazum.SpriteAtlas
 {
     [Serializable]
@@ -41,7 +40,7 @@ namespace Orazum.SpriteAtlas
                 sprites.Add(texturesToPack[i].name, sprite);
             }
 
-            this.texture = saverAsTexture.CombineTextures(texturesToPack, packedSprites, atlasDims);;
+            this.texture = saverAsTexture.CombineTextures(texturesToPack, packedSprites, atlasDims);
         }
 
         SpriteInfo ConvertSprite(SpriteManaged sprite)
