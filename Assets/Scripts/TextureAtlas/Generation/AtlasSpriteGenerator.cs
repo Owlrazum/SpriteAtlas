@@ -50,8 +50,10 @@ namespace Orazum.SpriteAtlas.Generation
 
         public void SaveAtlas(Texture2D atlas, string filePath)
         {
+#if UNITY_EDITOR
             AssetDatabase.CreateAsset(atlas, filePath);
             AssetDatabase.SaveAssets();
+#endif
         }
     }
 }

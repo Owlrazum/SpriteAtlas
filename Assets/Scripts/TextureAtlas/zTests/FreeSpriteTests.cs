@@ -10,7 +10,7 @@ namespace Orazum.SpriteAtlas.Generation.Tests
         public void Simple()
         {
             FreeSprite s1 = Create(new int2(0, 0), new int2(100, 100));
-            FreeSprite s2 = Create(new int2(101, 0), new int2(100, 100));
+            FreeSprite s2 = Create(new int2(100, 0), new int2(100, 100));
 
             Assert.IsTrue(s1.IsAdjacent(s2) && s2.IsAdjacent(s1));
 
@@ -22,10 +22,10 @@ namespace Orazum.SpriteAtlas.Generation.Tests
         public void Pair()
         {
             var s1 = Create(new int2(50, 100), new int2(200, 50));
-            var s2 = Create(new int2(100, 151), new int2(50, 200));
+            var s2 = Create(new int2(100, 150), new int2(50, 200));
             Assert.IsTrue(s1.IsAdjacent(s2) && s2.IsAdjacent(s1));
 
-            s2.Move(new int2(150, 0));
+            s2.Move(new int2(50, 0));
             Assert.IsTrue(s1.IsAdjacent(s2) && s2.IsAdjacent(s1));
 
             var s3 = s2.Clone();

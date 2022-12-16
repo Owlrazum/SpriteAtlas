@@ -12,6 +12,14 @@ namespace Orazum.SpriteAtlas
     [Serializable]
     public class SpriteAtlasManaged
     {
+        [NonSerialized]
+        UnityEngine.Texture2D texture;
+        string textureFilePath;
+
+        Dictionary<string, SpriteInfo> sprites;
+
+        int2 atlasDims;
+#if UNITY_EDITOR
         static AtlasSpriteGenerator saverAsTexture;
         static SpriteAtlasSaver saver;
         static SpriteAtlasManaged()
@@ -19,14 +27,16 @@ namespace Orazum.SpriteAtlas
             saverAsTexture = new();
             saver = new();
         }
+#else
+        static SpriteAtlasSaver saver;
+        static SpriteAtlasManaged()
+        {
+            saver = new();
+        }
+#endif
 
-        [NonSerialized]
-        UnityEngine.Texture2D texture;
-        string textureFilePath;
+#if UNITY_EDITOR
 
-        Dictionary<string, SpriteInfo> sprites;
-        
-        int2 atlasDims;
         SpriteManaged[] packedSprites;
 
         public SpriteAtlasManaged(Texture[] texturesToPack)
@@ -58,7 +68,6 @@ namespace Orazum.SpriteAtlas
             saver.SaveAtlas(atlas, filePath);
         }
 
-#if UNITY_EDITOR
         public static void SaveAtlasTexture(string filePath, SpriteAtlasManaged atlas)
         {
             UnityEditor.AssetDatabase.CreateAsset(atlas.texture, filePath);

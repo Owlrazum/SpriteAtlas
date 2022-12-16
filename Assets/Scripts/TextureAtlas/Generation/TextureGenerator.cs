@@ -9,7 +9,7 @@ using Orazum.Utilities;
 using rnd = UnityEngine.Random;
 
 namespace Orazum.SpriteAtlas.Generation
-{ 
+{
     public class TextureGenerator : MonoBehaviour
     {
         [SerializeField]
@@ -21,7 +21,8 @@ namespace Orazum.SpriteAtlas.Generation
         Texture2D[] textures;
 
         public void GenerateRandomTextures(int texturesCount, string folderPath)
-        { 
+        {
+#if UNITY_EDITOR
             textures = new Texture2D[texturesCount];
             for (int i = 0; i < texturesCount; i++)
             {
@@ -29,6 +30,7 @@ namespace Orazum.SpriteAtlas.Generation
                 AssetDatabase.CreateAsset(textures[i], folderPath + $"rnd_{i}.asset");
             }
             AssetDatabase.SaveAssets();
+#endif 
         }
 
         Texture2D GenerateRandomTexture()
@@ -47,7 +49,7 @@ namespace Orazum.SpriteAtlas.Generation
         }
 
         Texture2D GenerateRandomTextureBordered(Color32 borderColor)
-        { 
+        {
             int width = rnd.Range(minMaxWidth.x, minMaxWidth.y + 1);
             int height = rnd.Range(minMaxHeight.x, minMaxHeight.y + 1);
 
@@ -63,7 +65,7 @@ namespace Orazum.SpriteAtlas.Generation
         }
 
         NativeArray<Color32> GenerateColor32TextureData(int width, int height)
-        { 
+        {
             int pixelCount = width * height;
             NativeArray<Color32> data = new NativeArray<Color32>(pixelCount, Allocator.Temp);
             for (int row = 0; row < height; row++)
@@ -92,7 +94,7 @@ namespace Orazum.SpriteAtlas.Generation
                 }
 
                 for (int downUp = 0; downUp < width; downUp++)
-                { 
+                {
                     int down = IndexUtilities.XyToIndex(new int2(downUp, i), width);
                     int up = IndexUtilities.XyToIndex(new int2(downUp, height - i - 1), width);
 
@@ -103,9 +105,9 @@ namespace Orazum.SpriteAtlas.Generation
         }
 
         Color32 RandomColor()
-        { 
+        {
             int3 rndColor = new int3(rnd.Range(0, 255), rnd.Range(0, 255), rnd.Range(0, 255));
-            return new Color32((byte) rndColor.x, (byte) rndColor.y, (byte) rndColor.z, 255);
+            return new Color32((byte)rndColor.x, (byte)rndColor.y, (byte)rndColor.z, 255);
         }
     }
 }
