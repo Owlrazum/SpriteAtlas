@@ -1,8 +1,5 @@
 using System.Collections.Generic;
-using UnityEngine.Assertions;
 using Unity.Mathematics;
-
-using UnityEngine;
 
 namespace Orazum.SpriteAtlas.Generation
 {
@@ -108,7 +105,7 @@ namespace Orazum.SpriteAtlas.Generation
 
             float totalArea = added.Area + other.Area;
             float lossRatio = areaLoss / totalArea;
-            if (lossRatio < maxAreaLossRatio && lossRatio >= 0)
+            if (lossRatio < maxAreaLossRatio)
             {
                 RemoveIfFound(added.Id);
                 RemoveIfFound(other.Id);
@@ -162,89 +159,7 @@ namespace Orazum.SpriteAtlas.Generation
 
         public FreeSprite GetNode(int nodeId)
         {
-            CheckNodeId(nodeId);
             return freeSprites[nodeId];
-        }
-
-        public List<int> GetAdjacentNodes(int nodeId)
-        {
-            CheckNodeId(nodeId);
-            return edges[nodeId];
-        }
-
-        public List<List<FreeSprite>> GetAdjacentGroups(int minConnections = 2)
-        {
-            List<List<FreeSprite>> adjacentGroups = new(freeSprites.Count / 3);
-            HashSet<int> checkedIds = new HashSet<int>(freeSprites.Count);
-            for (int i = 0; i < idCount; i++)
-            {
-                if (!HasNode(i))
-                {
-                    continue;
-                }
-
-                if (checkedIds.Contains(i))
-                {
-                    continue;
-                }
-
-                int nodeId = i;
-                List<FreeSprite> group = new(edges[nodeId].Count + 1);
-                group.Add(freeSprites[nodeId]);
-                checkedIds.Add(nodeId);
-                for (int j = 0; j < edges[nodeId].Count; j++)
-                {
-                    int id = edges[nodeId][j];
-                    TraverseConnection(checkedIds, group, id);
-                }
-
-                if (group.Count >= minConnections)
-                {
-                    adjacentGroups.Add(group);
-                }
-            }
-
-            return adjacentGroups;
-        }
-
-        public List<FreeSprite> GetAdjacentGroup(int nodeId)
-        {
-            CheckNodeId(nodeId);
-            List<FreeSprite> group = new(edges[nodeId].Count + 1);
-            HashSet<int> checkedIds = new HashSet<int>(group.Capacity);
-            group.Add(freeSprites[nodeId]);
-            checkedIds.Add(nodeId);
-            for (int i = 0; i < edges[nodeId].Count; i++)
-            {
-                int id = edges[nodeId][i];
-                TraverseConnection(checkedIds, group, id);
-            }
-
-            return group;
-        }
-
-        void TraverseConnection(HashSet<int> checkedIds, List<FreeSprite> group, int nodeId)
-        {
-            if (checkedIds.Contains(nodeId))
-            {
-                return;
-            }
-
-            group.Add(freeSprites[nodeId]);
-            checkedIds.Add(nodeId);
-            for (int i = 0; i < edges[nodeId].Count; i++)
-            {
-                int id = edges[nodeId][i];
-                TraverseConnection(checkedIds, group, id);
-            }
-        }
-
-        void CheckNodeId(int nodeId)
-        {
-            if (!freeSprites.ContainsKey(nodeId))
-            {
-                Debug.LogError("freeSprites do not contain key!");
-            }
         }
     }
 }
